@@ -8,8 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.rwt.RWT;
-import org.eclipse.rwt.service.IServiceHandler;
+import org.eclipse.rap.rwt.RWT;
+import org.eclipse.rap.rwt.service.IServiceHandler;
 
 /**
  * {@link IServiceHandler} implementation allowing to download platform log file

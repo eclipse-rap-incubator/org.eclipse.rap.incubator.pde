@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.eclipse.rwt.RWT;
+import org.eclipse.rap.rwt.RWT;
 
 /**
  * Group of entries with additional Session data.

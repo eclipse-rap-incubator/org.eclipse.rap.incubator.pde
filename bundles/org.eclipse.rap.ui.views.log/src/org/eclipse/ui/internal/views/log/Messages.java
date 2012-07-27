@@ -12,7 +12,7 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
-import org.eclipse.rwt.RWT;
+import org.eclipse.rap.rwt.RWT;
 
 public class Messages {
 

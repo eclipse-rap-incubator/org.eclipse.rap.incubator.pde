@@ -16,7 +16,7 @@ import java.io.StringWriter;
 import java.text.*;
 import java.util.*;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.rwt.RWT;
+import org.eclipse.rap.rwt.RWT;
 
 /**
  * Represents a given entry in the Error view

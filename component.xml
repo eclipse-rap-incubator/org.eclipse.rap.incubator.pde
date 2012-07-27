@@ -8,7 +8,8 @@
   </maintainer>
   <description>
     <p>
-      Ports of the plugin-spy and error log views from PDE UI.
+      Ports of the plugin-spy and error log views from
+      <a href="http://www.eclipse.org/pde/pde-ui/">PDE UI</a>.
     </p>
   </description>
 </component>

@@ -21,14 +21,7 @@
     <relativePath>../../../org.eclipse.rap.incubator.releng/releng/org.eclipse.rap.incubator.releng/parent</relativePath>
   </parent>
 
-  <artifactId>org.eclipse.rap.pde.build</artifactId>
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>../../bundles/org.eclipse.rap.ui.views.log</module>
-    <module>../../bundles/org.eclipse.rap.pde.runtime</module>
-    <module>../../features/org.eclipse.rap.pde.feature</module>
-    <module>repository</module>
-  </modules>
+  <artifactId>org.eclipse.rap.pde.runtime</artifactId>
+  <packaging>eclipse-plugin</packaging>
 
 </project>

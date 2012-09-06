@@ -11,5 +11,8 @@
       Ports of the plugin-spy and error log views from
       <a href="http://www.eclipse.org/pde/pde-ui/">PDE UI</a>.
     </p>
+    <p>
+    	<a href="http://wiki.eclipse.org/RAP/Incubator/PDERuntime">wiki page</a> 
+    </p>
   </description>
 </component>

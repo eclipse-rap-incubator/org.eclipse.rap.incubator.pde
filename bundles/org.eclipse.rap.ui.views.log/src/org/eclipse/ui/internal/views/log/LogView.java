@@ -32,8 +32,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.rap.rwt.RWT;
-import org.eclipse.rap.rwt.service.IServiceHandler;
-import org.eclipse.rap.rwt.widgets.ExternalBrowser;
+import org.eclipse.rap.rwt.client.service.UrlLauncher;
 import org.eclipse.rap.ui.internal.preferences.SessionScope;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -51,7 +50,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
 public class LogView extends ViewPart implements ILogListener {
-	public static final String DOWNLOAD_SERVICE_HANDLER_ID = "downloadLogFile"; //$NON-NLS-1$
+	public static final String DOWNLOAD_SERVICE_HANDLER_ID = "org.eclipse.rap.ui.view.log.downloadLogFile"; //$NON-NLS-1$
 
 	public static final String P_LOG_WARNING = "warning"; //$NON-NLS-1$
 	public static final String P_LOG_ERROR = "error"; //$NON-NLS-1$
@@ -123,8 +122,6 @@ public class LogView extends ViewPart implements ILogListener {
 	private Action fExportLogAction;
 	private Action fExportLogEntryAction;
 
-	private DownloadServiceHandler fDownloadServiceHandler;
-
 	/**
 	 * Action called when user selects "Group by -> ..." from menu.
 	 */
@@ -157,8 +154,6 @@ public class LogView extends ViewPart implements ILogListener {
 		groups = new HashMap();
 		batchedEntries = new ArrayList();
 		fInputFile = Platform.getLogFileLocation().toFile();
-		fDownloadServiceHandler = new DownloadServiceHandler(fInputFile);
-		RWT.getServiceManager().registerServiceHandler(DOWNLOAD_SERVICE_HANDLER_ID, fDownloadServiceHandler);
 	}
 
 	/* (non-Javadoc)
@@ -734,15 +729,10 @@ public class LogView extends ViewPart implements ILogListener {
 //				}
 //			}
 //		}
-		StringBuilder url = new StringBuilder();
-		url.append(RWT.getRequest().getContextPath());
-		url.append(RWT.getRequest().getServletPath());
-		url.append('?');
-		url.append(IServiceHandler.REQUEST_PARAM);
-		url.append('=').append(DOWNLOAD_SERVICE_HANDLER_ID);
-		String encodedURL = RWT.getResponse().encodeURL(url.toString());
+		String encodedURL = RWT.getServiceManager().getServiceHandlerUrl(DOWNLOAD_SERVICE_HANDLER_ID);
 
-		ExternalBrowser.open(DOWNLOAD_SERVICE_HANDLER_ID, encodedURL, SWT.NONE);
+		UrlLauncher launcher = (UrlLauncher) RWT.getClient().getService(UrlLauncher.class);
+		launcher.openURL(encodedURL);
 	}
 
 //	private void copy(BufferedReader reader, BufferedWriter writer) throws IOException {

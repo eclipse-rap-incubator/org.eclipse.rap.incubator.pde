@@ -5,17 +5,17 @@ package org.eclipse.ui.internal.views.log;
 
 import java.io.*;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.rap.rwt.RWT;
-import org.eclipse.rap.rwt.service.IServiceHandler;
+import org.eclipse.rap.rwt.service.ServiceHandler;
 
 /**
- * {@link IServiceHandler} implementation allowing to download platform log file
+ * {@link ServiceHandler} implementation allowing to download platform log file
  *
  */
-public class DownloadServiceHandler implements IServiceHandler {
+public class DownloadServiceHandler implements ServiceHandler {
 	private File fInputFile;
 
 	public DownloadServiceHandler(File pInputFile) {
@@ -30,9 +30,8 @@ public class DownloadServiceHandler implements IServiceHandler {
 	/**
 	 * @see org.eclipse.rwt.service.IServiceHandler#service()
 	 */
-	public void service() throws IOException, ServletException {
+	public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		// Send the file in the response
-		HttpServletResponse response = RWT.getResponse();
 		response.setContentType("application/octet-stream");
 		response.setContentLength((int) fInputFile.length());
 		String fileName = fInputFile.getName();
@@ -59,5 +58,4 @@ public class DownloadServiceHandler implements IServiceHandler {
 		}
 
 	}
-
 }

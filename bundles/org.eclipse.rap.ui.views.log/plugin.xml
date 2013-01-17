@@ -43,4 +43,11 @@
             priority="high">
       </content-type>
    </extension>
+   <extension
+         point="org.eclipse.rap.ui.serviceHandler">
+      <serviceHandler
+            class="org.eclipse.ui.internal.views.log.DownloadServiceHandler"
+            id="org.eclipse.rap.ui.view.log.downloadLogFile">
+      </serviceHandler>
+   </extension>
 </plugin>

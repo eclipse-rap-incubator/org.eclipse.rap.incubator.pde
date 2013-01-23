@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 202583, 207344
  *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
+ *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 

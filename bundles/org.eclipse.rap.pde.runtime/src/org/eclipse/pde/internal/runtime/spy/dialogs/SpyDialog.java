@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2008 IBM Corporation and others.
+ * Copyright (c) 2007, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
  * Contributors:
  *     Chris Aniszczyk <zx@us.ibm.com> - initial API and implementation
  *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 211580
+ *     Arnaud Mergey <a_mergey@yahoo.fr>              - RAP port
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.dialogs;
 
@@ -15,25 +16,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.pde.internal.runtime.IHelpContextIds;
-import org.eclipse.pde.internal.runtime.PDERuntimeMessages;
-import org.eclipse.pde.internal.runtime.PDERuntimePluginImages;
+import org.eclipse.pde.internal.runtime.*;
 import org.eclipse.pde.internal.runtime.spy.SpyFormToolkit;
-import org.eclipse.pde.internal.runtime.spy.sections.ActiveDialogPageSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ActiveFormEditorSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ActiveHelpSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ActivePartSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ActiveSelectionSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ActiveShellSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ActiveWizardSection;
-import org.eclipse.pde.internal.runtime.spy.sections.ISpySection;
+import org.eclipse.pde.internal.runtime.spy.sections.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.ScrolledForm;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * Copyright (c) 2000, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@
  *     													bugs 172658, 216341, 216657
  *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
  *     Tuukka Lehtonen <tuukka.lehtonen@semantum.fi>  - bug 247907
+ *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
  *******************************************************************************/
 
 package org.eclipse.ui.internal.views.log;
@@ -1065,10 +1066,12 @@ public class LogView extends ViewPart implements ILogListener {
 						fOpenLogAction.setEnabled(fInputFile.exists());
 						fExportLogAction.setEnabled(fInputFile.exists());
 						fExportLogEntryAction.setEnabled(!viewer.getSelection().isEmpty());
-						if (activate && fActivateViewAction.isChecked()) {
-							IWorkbenchPage page = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
-							if (page != null)
+						IWorkbenchWindow window = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
+						if (window != null) {
+							IWorkbenchPage page = window.getActivePage();
+							if (page != null) {
 								page.bringToTop(view);
+							}
 						}
 					}
 				}

@@ -17,7 +17,6 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.eclipse.rap.rwt.RWT;
 
 /**
  * Group of entries with additional Session data.
@@ -42,7 +41,7 @@ public class LogSession extends Group {
 	}
 
 	public void setDate(String dateString) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", RWT.getLocale()); //$NON-NLS-1$
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 		try {
 			date = formatter.parse(dateString);
 		} catch (ParseException e) { // do nothing

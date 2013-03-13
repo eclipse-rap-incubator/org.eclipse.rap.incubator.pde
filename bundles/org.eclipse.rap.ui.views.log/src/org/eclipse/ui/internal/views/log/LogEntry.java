@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
+ * Copyright (c) 2000, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 209474, 207344
+ *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
@@ -16,7 +17,6 @@ import java.io.StringWriter;
 import java.text.*;
 import java.util.*;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.rap.rwt.RWT;
 
 /**
  * Represents a given entry in the Error view
@@ -25,8 +25,8 @@ public class LogEntry extends AbstractEntry {
 
 	public static final String SPACE = " "; //$NON-NLS-1$
 	public static final String F_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"; //$NON-NLS-1$
-	private static final DateFormat GREGORIAN_SDF = new SimpleDateFormat(F_DATE_FORMAT, Locale.ENGLISH);
-	private DateFormat localSDF;
+	private final DateFormat GREGORIAN_SDF = new SimpleDateFormat(F_DATE_FORMAT, Locale.ENGLISH);
+	private final DateFormat LOCAL_SDF = new SimpleDateFormat(F_DATE_FORMAT);
 
 	private String pluginId;
 	private int severity;
@@ -42,7 +42,6 @@ public class LogEntry extends AbstractEntry {
 	 */
 	public LogEntry() {
 		//do nothing
-		localSDF = new SimpleDateFormat(F_DATE_FORMAT, RWT.getLocale());
 	}
 
 	/**
@@ -135,7 +134,7 @@ public class LogEntry extends AbstractEntry {
 	 */
 	public String getFormattedDate() {
 		if (fDateString == null) {
-			fDateString = localSDF.format(getDate());
+			fDateString = LOCAL_SDF.format(getDate());
 		}
 		return fDateString;
 	}
@@ -236,7 +235,7 @@ public class LogEntry extends AbstractEntry {
 		Date date = GREGORIAN_SDF.parse(dateBuffer.toString());
 		if (date != null) {
 			fDate = date;
-			fDateString = localSDF.format(fDate);
+			fDateString = LOCAL_SDF.format(fDate);
 		}
 	}
 
@@ -306,7 +305,7 @@ public class LogEntry extends AbstractEntry {
 		Date date = GREGORIAN_SDF.parse(dateBuffer.toString());
 		if (date != null) {
 			fDate = date;
-			fDateString = localSDF.format(fDate);
+			fDateString = LOCAL_SDF.format(fDate);
 		}
 		return depth;
 	}
@@ -338,7 +337,7 @@ public class LogEntry extends AbstractEntry {
 		severity = status.getSeverity();
 		code = status.getCode();
 		fDate = new Date();
-		fDateString = localSDF.format(fDate);
+		fDateString = LOCAL_SDF.format(fDate);
 		message = status.getMessage();
 		Throwable throwable = status.getException();
 		if (throwable != null) {

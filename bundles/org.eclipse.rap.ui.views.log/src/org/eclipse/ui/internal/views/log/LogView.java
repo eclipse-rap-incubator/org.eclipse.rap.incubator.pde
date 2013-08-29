@@ -124,6 +124,8 @@ public class LogView extends ViewPart implements ILogListener {
 	private Action fExportLogAction;
 	private Action fExportLogEntryAction;
 
+	private Display fDisplay = null;
+
 	/**
 	 * Action called when user selects "Group by -> ..." from menu.
 	 */
@@ -162,6 +164,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public void createPartControl(Composite parent) {
+		fDisplay = getSite().getShell().getDisplay();
 		Composite composite = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
 		layout.horizontalSpacing = 0;
@@ -825,11 +828,13 @@ public class LogView extends ViewPart implements ILogListener {
 		group(result);
 		limitEntriesCount();
 
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
-			public void run() {
-				setContentDescription(getTitleSummary());
-			}
-		});
+		if (fDisplay != null) {
+			fDisplay.asyncExec(new Runnable() {
+				public void run() {
+					setContentDescription(getTitleSummary());
+				}
+			});
+		}
 
 	}
 

@@ -96,7 +96,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private IMemento fMemento;
 	private File fInputFile;
-	private String fDirectory;
+//	private String fDirectory;
 
 	private Comparator fComparator;
 
@@ -635,9 +635,11 @@ public class LogView extends ViewPart implements ILogListener {
 	 */
 	void handleImport() {
 		FileDialog dialog = new FileDialog(getViewSite().getShell());
-		dialog.setFilterExtensions(new String[] {"*.log"}); //$NON-NLS-1$
-		if (fDirectory != null)
-			dialog.setFilterPath(fDirectory);
+		// RAP [if] Missing API
+//		dialog.setFilterExtensions(new String[] {"*.log"}); //$NON-NLS-1$
+//		if (fDirectory != null)
+//			dialog.setFilterPath(fDirectory);
+		// RAPEND
 		String path = dialog.open();
 		if (path == null) { // cancel
 			return;
@@ -669,7 +671,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 */
 	protected void setLogFile(File path) {
 		fInputFile = path;
-		fDirectory = fInputFile.getParent();
+//		fDirectory = fInputFile.getParent();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) {
 				monitor.beginTask(Messages.get().LogView_operation_importing, IProgressMonitor.UNKNOWN);

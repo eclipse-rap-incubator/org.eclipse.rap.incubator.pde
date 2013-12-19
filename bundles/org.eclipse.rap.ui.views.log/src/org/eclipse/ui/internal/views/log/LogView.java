@@ -633,7 +633,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 * Import log from file selected in FileDialog.
 	 */
 	void handleImport() {
-		FileDialog dialog = new FileDialog(getViewSite().getShell());
+		FileDialog dialog = new FileDialog(getViewSite().getShell(), SWT.SINGLE | SWT.SHELL_TRIM | SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL);
 		String path = dialog.open();
 		if (path == null) { // cancel
 			return;

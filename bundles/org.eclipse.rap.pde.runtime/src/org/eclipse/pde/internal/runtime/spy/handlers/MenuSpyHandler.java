@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 EclipseSource Corporation and others.
+ * Copyright (c) 2009, 2014 EclipseSource Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     EclipseSource Corporation - initial API and implementation
+ *     Mickael Istria (Red Hat Inc.) - 434317
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.handlers;
 
@@ -16,10 +17,7 @@ import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.pde.internal.runtime.spy.dialogs.MenuSpyDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 
@@ -88,6 +86,13 @@ public class MenuSpyHandler extends AbstractHandler implements Listener {
     }
     if( event.type == SWT.Selection ) {
       Shell shell = display.getActiveShell();
+      if( shell == null ) { // see bug 434317
+        if( event.widget instanceof Menu ) {
+          shell = ( ( Menu )event.widget ).getShell();
+        } else if( event.widget instanceof MenuItem ) {
+          shell = ( ( MenuItem )event.widget ).getParent().getShell();
+        }
+      }
       MenuSpyDialog dialog = new MenuSpyDialog( shell, event, shell.getDisplay()
         .getCursorLocation() );
       INSTANCE = dialog;

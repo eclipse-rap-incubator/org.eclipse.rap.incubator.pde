@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@
  *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
  *     Tuukka Lehtonen <tuukka.lehtonen@semantum.fi>  - bug 247907
  *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
+ *     Eike Stepper <stepper@esc-net.de>			  - bug 429372
  *******************************************************************************/
 
 package org.eclipse.ui.internal.views.log;
@@ -1038,24 +1039,13 @@ public class LogView extends ViewPart implements ILogListener {
 	}
 
 	private LogEntry createLogEntry(IStatus status) {
-		LogEntry entry = new LogEntry(status);
-		entry.setSession(currentSession);
+		LogEntry entry = new LogEntry(status, currentSession);
 
 		if (status.getException() instanceof CoreException) {
 			IStatus coreStatus = ((CoreException) status.getException()).getStatus();
 			if (coreStatus != null) {
 				LogEntry childEntry = createLogEntry(coreStatus);
 				entry.addChild(childEntry);
-				childEntry.setSession(currentSession);
-			}
-		}
-
-		if (status.isMultiStatus()) {
-			IStatus[] children = status.getChildren();
-			for (int i = 0; i < children.length; i++) {
-				LogEntry childEntry = createLogEntry(children[i]);
-				entry.addChild(childEntry);
-				childEntry.setSession(currentSession);
 			}
 		}
 

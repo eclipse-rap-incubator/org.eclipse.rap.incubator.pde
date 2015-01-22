@@ -18,10 +18,10 @@
 
 package org.eclipse.ui.internal.views.log;
 
+import com.ibm.icu.text.DateFormat;
+import com.ibm.icu.text.SimpleDateFormat;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import org.eclipse.core.runtime.*;
@@ -59,6 +59,12 @@ public class LogView extends ViewPart implements ILogListener {
 	public static final String P_LOG_ERROR = "error"; //$NON-NLS-1$
 	public static final String P_LOG_INFO = "info"; //$NON-NLS-1$
 	public static final String P_LOG_OK = "ok"; //$NON-NLS-1$
+
+	/** 
+	 * Maximum tail size of the log file in Mega Bytes (1024 * 1024 Bytes) considers the last XYZ MB of the log file to create log entries.
+	 * This value should be increased if the size of the sub elements of the last (most recent) log entry in the log file exceeds the maximum tail size. 
+	 **/
+	public static final String P_LOG_MAX_TAIL_SIZE = "maxLogTailSize"; //$NON-NLS-1$
 	public static final String P_LOG_LIMIT = "limit"; //$NON-NLS-1$
 	public static final String P_USE_LIMIT = "useLimit"; //$NON-NLS-1$
 	public static final String P_SHOW_ALL_SESSIONS = "allSessions"; //$NON-NLS-1$
@@ -71,6 +77,9 @@ public class LogView extends ViewPart implements ILogListener {
 	public static final String P_ORDER_VALUE = "orderValue"; //$NON-NLS-1$
 	public static final String P_IMPORT_LOG = "importLog"; //$NON-NLS-1$
 	public static final String P_GROUP_BY = "groupBy"; //$NON-NLS-1$
+
+	/** default values **/
+	private static final int DEFAULT_LOG_MAX_TAIL_SIZE = 1; // 1 Mega Byte
 
 	private int MESSAGE_ORDER;
 	private int PLUGIN_ORDER;
@@ -97,6 +106,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private IMemento fMemento;
 	private File fInputFile;
+//	private String fDirectory;
 
 	private Comparator fComparator;
 
@@ -172,7 +182,7 @@ public class LogView extends ViewPart implements ILogListener {
 		layout.marginWidth = 0;
 		layout.marginHeight = 0;
 		composite.setLayout(layout);
-//		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		readLogFile();
 		createViewer(composite);
@@ -446,8 +456,8 @@ public class LogView extends ViewPart implements ILogListener {
 	}
 
 	/**
-	 * Creates the Show Text Filter view menu action 
-	 * @return the new action for the Show Text Filter 
+	 * Creates the Show Text Filter view menu action
+	 * @return the new action for the Show Text Filter
 	 */
 	private Action createShowTextFilter() {
 		Action action = new Action(Messages.get().LogView_show_filter_text) {
@@ -462,9 +472,9 @@ public class LogView extends ViewPart implements ILogListener {
 	}
 
 	/**
-	 * Shows/hides the filter text control from the filtered tree. This method also sets the 
+	 * Shows/hides the filter text control from the filtered tree. This method also sets the
 	 * P_SHOW_FILTER_TEXT preference to the visible state
-	 * 
+	 *
 	 * @param visible if the filter text control should be shown or not
 	 */
 	private void showFilterText(boolean visible) {
@@ -666,6 +676,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 */
 	protected void setLogFile(File path) {
 		fInputFile = path;
+//		fDirectory = fInputFile.getParent();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) {
 				monitor.beginTask(Messages.get().LogView_operation_importing, IProgressMonitor.UNKNOWN);
@@ -948,7 +959,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 * Returns group appropriate for the entry. Group depends on P_GROUP_BY
 	 * preference, or is null if grouping is disabled (GROUP_BY_NONE), or group
 	 * could not be determined. May create group if it haven't existed before.
-	 * 
+	 *
 	 * @param entry entry to be grouped
 	 * @return group or null if grouping is disabled
 	 */
@@ -1076,11 +1087,13 @@ public class LogView extends ViewPart implements ILogListener {
 						fOpenLogAction.setEnabled(fInputFile.exists());
 						fExportLogAction.setEnabled(fInputFile.exists());
 						fExportLogEntryAction.setEnabled(!viewer.getSelection().isEmpty());
-						IWorkbenchWindow window = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
-						if (window != null) {
-							IWorkbenchPage page = window.getActivePage();
-							if (page != null) {
-								page.bringToTop(view);
+						if (activate && fActivateViewAction.isChecked()) {
+							IWorkbenchWindow window = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
+							if (window != null) {
+								IWorkbenchPage page = window.getActivePage();
+								if (page != null) {
+									page.bringToTop(view);
+								}
 							}
 						}
 					}
@@ -1161,7 +1174,7 @@ public class LogView extends ViewPart implements ILogListener {
 			this.fMemento = memento;
 		readSettings();
 
-		// initialize column ordering 
+		// initialize column ordering
 		final byte type = this.fMemento.getInteger(P_ORDER_TYPE).byteValue();
 		switch (type) {
 			case DATE :
@@ -1228,7 +1241,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 * @param column the column to get the width from
 	 * @param defaultwidth the width to return if the column has been resized to not be visible
 	 * @return the width of the column or the default value
-	 * 
+	 *
 	 * @since 3.6
 	 */
 	int getColumnWidth(TreeColumn column, int defaultwidth) {
@@ -1581,15 +1594,29 @@ public class LogView extends ViewPart implements ILogListener {
 			}
 		}
 
-		Preferences p = getLogPreferences(); // never returns null
-		fMemento.putInteger(P_COLUMN_1, getColumnWidthPreference(p, P_COLUMN_1, 300));
-		fMemento.putInteger(P_COLUMN_2, getColumnWidthPreference(p, P_COLUMN_2, 150));
-		fMemento.putInteger(P_COLUMN_3, getColumnWidthPreference(p, P_COLUMN_3, 150));
-		fMemento.putBoolean(P_ACTIVATE, p.getBoolean(P_ACTIVATE, true));
-		fMemento.putInteger(P_ORDER_VALUE, p.getInt(P_ORDER_VALUE, DESCENDING));
-		fMemento.putInteger(P_ORDER_TYPE, p.getInt(P_ORDER_TYPE, LogView.DATE));
-		fMemento.putBoolean(P_SHOW_FILTER_TEXT, p.getBoolean(P_SHOW_FILTER_TEXT, true));
-		fMemento.putInteger(P_GROUP_BY, p.getInt(P_GROUP_BY, LogView.GROUP_BY_NONE));
+		Preferences instancePrefs = getLogPreferences();
+		Preferences defaultPrefs = getLogPreferences();
+		fMemento.putInteger(P_COLUMN_1, getColumnWidthPreference(instancePrefs, defaultPrefs, P_COLUMN_1, 300));
+		fMemento.putInteger(P_COLUMN_2, getColumnWidthPreference(instancePrefs, defaultPrefs, P_COLUMN_2, 150));
+		fMemento.putInteger(P_COLUMN_3, getColumnWidthPreference(instancePrefs, defaultPrefs, P_COLUMN_3, 150));
+		fMemento.putBoolean(P_ACTIVATE, instancePrefs.getBoolean(P_ACTIVATE, defaultPrefs.getBoolean(P_ACTIVATE, true)));
+		fMemento.putInteger(P_ORDER_VALUE, instancePrefs.getInt(P_ORDER_VALUE, defaultPrefs.getInt(P_ORDER_VALUE, DESCENDING)));
+		fMemento.putInteger(P_ORDER_TYPE, instancePrefs.getInt(P_ORDER_TYPE, defaultPrefs.getInt(P_ORDER_TYPE, LogView.DATE)));
+		fMemento.putBoolean(P_SHOW_FILTER_TEXT, instancePrefs.getBoolean(P_SHOW_FILTER_TEXT, defaultPrefs.getBoolean(P_SHOW_FILTER_TEXT, true)));
+		fMemento.putInteger(P_GROUP_BY, instancePrefs.getInt(P_GROUP_BY, defaultPrefs.getInt(P_GROUP_BY, LogView.GROUP_BY_NONE)));
+		fMemento.putString(P_LOG_MAX_TAIL_SIZE, String.valueOf(getLogMaxTailSizePreference(instancePrefs, defaultPrefs, DEFAULT_LOG_MAX_TAIL_SIZE)));
+	}
+
+	private long getLogMaxTailSizePreference(Preferences instancePrefs, Preferences defaultPrefs, long defaultMaxLogTailSize) {
+		try {
+			return instancePrefs.getLong(P_LOG_MAX_TAIL_SIZE, defaultPrefs.getLong(P_LOG_MAX_TAIL_SIZE, defaultMaxLogTailSize));
+		} catch (IllegalStateException ex) {
+			return defaultMaxLogTailSize;
+		}
+	}
+
+	private long getLogMaxTailSize() {
+		return Long.valueOf(this.fMemento.getString(P_LOG_MAX_TAIL_SIZE)).longValue();
 	}
 
 	/**
@@ -1599,15 +1626,16 @@ public class LogView extends ViewPart implements ILogListener {
 	 * <li>There is no preference for the given key</li>
 	 * <li>The returned preference value is too small, making the columns invisible by width.</li>
 	 * </ul>
-	 * @param preferences
+	 * @param instancePrefs
+	 * @param defaultPrefs
 	 * @param key
 	 * @param defaultwidth
 	 * @return the stored width for the a column described by the given key or the default width
-	 * 
+	 *
 	 * @since 3.6
 	 */
-	int getColumnWidthPreference(Preferences preferences, String key, int defaultwidth) {
-		int width = preferences.getInt(key, defaultwidth);
+	int getColumnWidthPreference(Preferences instancePrefs, Preferences defaultPrefs, String key, int defaultwidth) {
+		int width = instancePrefs.getInt(key, /*defaultPrefs.getInt(key, */defaultwidth);//);
 		return width < 1 ? defaultwidth : width;
 	}
 
@@ -1630,17 +1658,18 @@ public class LogView extends ViewPart implements ILogListener {
 	}
 
 	private void writeViewSettings() {
-		Preferences preferences = getLogPreferences();
-		preferences.putInt(P_COLUMN_1, fMemento.getInteger(P_COLUMN_1).intValue());
-		preferences.putInt(P_COLUMN_2, fMemento.getInteger(P_COLUMN_2).intValue());
-		preferences.putInt(P_COLUMN_3, fMemento.getInteger(P_COLUMN_3).intValue());
-		preferences.putBoolean(P_ACTIVATE, fMemento.getBoolean(P_ACTIVATE).booleanValue());
-		preferences.putInt(P_ORDER_VALUE, fMemento.getInteger(P_ORDER_VALUE).intValue());
-		preferences.putInt(P_ORDER_TYPE, fMemento.getInteger(P_ORDER_TYPE).intValue());
-		preferences.putBoolean(P_SHOW_FILTER_TEXT, fMemento.getBoolean(P_SHOW_FILTER_TEXT).booleanValue());
-		preferences.putInt(P_GROUP_BY, fMemento.getInteger(P_GROUP_BY).intValue());
+		Preferences instancePrefs = getLogPreferences();
+		instancePrefs.putInt(P_COLUMN_1, fMemento.getInteger(P_COLUMN_1).intValue());
+		instancePrefs.putInt(P_COLUMN_2, fMemento.getInteger(P_COLUMN_2).intValue());
+		instancePrefs.putInt(P_COLUMN_3, fMemento.getInteger(P_COLUMN_3).intValue());
+		instancePrefs.putBoolean(P_ACTIVATE, fMemento.getBoolean(P_ACTIVATE).booleanValue());
+		instancePrefs.putInt(P_ORDER_VALUE, fMemento.getInteger(P_ORDER_VALUE).intValue());
+		instancePrefs.putInt(P_ORDER_TYPE, fMemento.getInteger(P_ORDER_TYPE).intValue());
+		instancePrefs.putBoolean(P_SHOW_FILTER_TEXT, fMemento.getBoolean(P_SHOW_FILTER_TEXT).booleanValue());
+		instancePrefs.putInt(P_GROUP_BY, fMemento.getInteger(P_GROUP_BY).intValue());
+		instancePrefs.putLong(P_LOG_MAX_TAIL_SIZE, getLogMaxTailSize());
 		try {
-			preferences.flush();
+			instancePrefs.flush();
 		} catch (BackingStoreException e) {
 			// empty
 		}
@@ -1701,7 +1730,7 @@ public class LogView extends ViewPart implements ILogListener {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void setPlatformLog() {
 		setLogFile(Platform.getLogFileLocation().toFile());

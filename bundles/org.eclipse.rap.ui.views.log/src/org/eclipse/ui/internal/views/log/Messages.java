@@ -17,6 +17,8 @@ import org.eclipse.rap.rwt.RWT;
 
 public class Messages {
 
+	public String LogReader_warn_noEntryWithinMaxLogTailSize;
+  
 	public String LogView_column_message;
 	public String LogView_column_plugin;
 	public String LogView_column_date;
@@ -63,6 +65,7 @@ public class Messages {
 	public String LogView_FilterDialog_warning;
 	public String LogView_FilterDialog_error;
 	public String LogView_FilterDialog_limitTo;
+	public String LogView_FilterDialog_maxLogTailSize;
 	public String LogView_FilterDialog_eventsLogged;
 	public String LogView_FilterDialog_allSessions;
 	public String LogView_FilterDialog_ok;
@@ -79,8 +82,9 @@ public class Messages {
 	public String LogViewLabelProvider_truncatedMessage;
 
 	public String EventDetailsDialog_title;
-	public String EventDetailsDialog_date;
+	public String EventDetailsDialog_plugIn;
 	public String EventDetailsDialog_severity;
+	public String EventDetailsDialog_date;
 	public String EventDetailsDialog_message;
 	public String EventDetailsDialog_exception;
 	public String EventDetailsDialog_session;

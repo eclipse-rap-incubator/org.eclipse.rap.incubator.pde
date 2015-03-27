@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation                   - initial API and implementation
+ *     IBM Corporation - initial API and implementation
  *     Arnaud Mergey <a_mergey@yahoo.fr> - RAP port
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.registry;
@@ -20,6 +20,7 @@ import org.eclipse.pde.internal.runtime.*;
 import org.eclipse.pde.internal.runtime.registry.model.*;
 import org.eclipse.swt.graphics.Image;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 
 
 public class RegistryBrowserLabelProvider extends LabelProvider {
@@ -48,6 +49,7 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
   private Image fServicePropertyImage;
   private Image fFragmentImage;
   private Image fPackageImage;
+  private Image fRemoteServiceProxyImage;
   private RegistryBrowser fRegistryBrowser;
 
   public RegistryBrowserLabelProvider( RegistryBrowser browser ) {
@@ -71,6 +73,7 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
     fPluginsImage = PDERuntimePluginImages.DESC_PLUGINS_OBJ.createImage();
     fFragmentImage = PDERuntimePluginImages.DESC_FRAGMENT_OBJ.createImage();
     fPackageImage = PDERuntimePluginImages.DESC_PACKAGE_OBJ.createImage();
+    fRemoteServiceProxyImage = PDERuntimePluginImages.DESC_REMOTE_SERVICE_PROXY_OBJ.createImage();
     ImageDescriptor activePluginDesc = new OverlayIcon( PDERuntimePluginImages.DESC_PLUGIN_OBJ,
                                                         new ImageDescriptor[][] {
                                                           {
@@ -135,6 +138,20 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
     fPackageImage.dispose();
   }
 
+  private boolean isProxyService( ServiceReference ref ) {
+    if( ref == null )
+      return false;
+    Object o = ref.getProperty( Constants.SERVICE_IMPORTED );
+    return( o != null );
+  }
+
+  private boolean isProxyService( ServiceRegistration reg ) {
+    if( reg == null )
+      return false;
+    Object o = reg.getProperty( Constants.SERVICE_IMPORTED );
+    return( o != null );
+  }
+
   public Image getImage( Object element ) {
     if( element instanceof Bundle ) {
       Bundle bundle = ( Bundle )element;
@@ -155,9 +172,15 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
       }
     }
     if( element instanceof ServiceName ) {
+      ServiceName serviceName = ( ServiceName )element;
+      if( isProxyService( serviceName.getServiceReference() ) )
+        return fRemoteServiceProxyImage;
       return fServiceImage;
     }
     if( element instanceof ServiceRegistration ) {
+      ServiceRegistration reg = ( ServiceRegistration )element;
+      if( isProxyService( reg ) )
+        return fRemoteServiceProxyImage;
       return fPluginImage;
     }
     if( element instanceof Property ) {
@@ -231,11 +254,10 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
   protected String getStyledText( Object element ) {
     if( element instanceof Bundle ) {
       Bundle bundle = ( ( Bundle )element );
-      // StyledString sb = new StyledString(bundle.getSymbolicName());
       StringBuilder sb = new StringBuilder( bundle.getSymbolicName() );
       String version = bundle.getVersion();
       if( version != null ) {
-        sb.append( " ("/* , StyledString.DECORATIONS_STYLER */); //$NON-NLS-1$ 
+        sb.append( " ("/* ,StyledString.DECORATIONS_STYLER */); //$NON-NLS-1$ 
         sb.append( version/* , StyledString.DECORATIONS_STYLER */);
         sb.append( ")"/* , StyledString.DECORATIONS_STYLER */); //$NON-NLS-1$
       }
@@ -250,7 +272,6 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
     if( element instanceof ServiceRegistration ) {
       ServiceRegistration ref = ( ServiceRegistration )element;
       String identifier = " (id=" + ref.getId() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
-      // StyledString ss = new StyledString();
       StringBuilder ss = new StringBuilder();
       if( fRegistryBrowser.getGroupBy() == RegistryBrowser.BUNDLES ) {
         String[] classes = ref.getName().getClasses();
@@ -310,7 +331,6 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
       if( ( ( RegistryBrowserContentProvider )fRegistryBrowser.getAdapter( IContentProvider.class ) ).isInExtensionSet )
       {
         Extension extension = ( ( Extension )element );
-        // StyledString ss = new StyledString(
         StringBuilder ss = new StringBuilder( extension.getExtensionPointUniqueIdentifier() );
         String name = extension.getLabel();
         if( name != null && name.length() > 0 ) {
@@ -326,8 +346,6 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
     }
     if( element instanceof ExtensionPoint ) {
       ExtensionPoint extPoint = ( ExtensionPoint )element;
-      // StyledString ss = new
-      // StyledString(extPoint.getUniqueIdentifier());
       StringBuilder ss = new StringBuilder( extPoint.getUniqueIdentifier() );
       String name = extPoint.getLabel();
       if( name != null && name.length() > 0 ) {
@@ -339,7 +357,6 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
     }
     if( element instanceof BundlePrerequisite ) {
       BundlePrerequisite prereq = ( BundlePrerequisite )element;
-      // StyledString ss = new StyledString(prereq.getName());
       StringBuilder ss = new StringBuilder( prereq.getName() );
       String version = prereq.getVersion();
       if( version != null ) {
@@ -370,13 +387,13 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
                           ? "" : element.toString(); //$NON-NLS-1$
   }
 
-  // public void update(ViewerCell cell) {
-  // StyledString string = getStyledText(cell.getElement());
-  // cell.setText(string.getString());
-  // cell.setStyleRanges(string.getStyleRanges());
-  // cell.setImage(getImage(cell.getElement()));
-  // super.update(cell);
-  // }
+// public void update( ViewerCell cell ) {
+// StyledString string = getStyledText( cell.getElement() );
+// cell.setText( string.getString() );
+// cell.setStyleRanges( string.getStyleRanges() );
+// cell.setImage( getImage( cell.getElement() ) );
+// super.update( cell );
+// }
   public String getText( Object element ) {
     return getStyledText( element );
   }

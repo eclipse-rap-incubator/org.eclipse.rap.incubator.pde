@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2012 IBM Corporation and others.
+ * Copyright (c) 2008, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,7 +34,7 @@ public class LocalRegistryBackend
 
   /*
    * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend #connect()
+   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#connect()
    */
   public void connect( IProgressMonitor monitor ) {
     if( monitor.isCanceled() )
@@ -46,7 +46,7 @@ public class LocalRegistryBackend
 
   /*
    * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend #disconnect()
+   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#disconnect()
    */
   public void disconnect() {
     Platform.getExtensionRegistry().removeListener( this );
@@ -68,8 +68,9 @@ public class LocalRegistryBackend
 
   /*
    * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend
-   * #start(org.osgi.framework.Bundle)
+   * @see
+   * org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#start(org.osgi.framework
+   * .Bundle)
    */
   public void start( long id ) throws BundleException {
     PDERuntimePlugin.getDefault().getBundleContext().getBundle( id ).start();
@@ -77,8 +78,9 @@ public class LocalRegistryBackend
 
   /*
    * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend
-   * #stop(org.osgi.framework.Bundle)
+   * @see
+   * org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#stop(org.osgi.framework
+   * .Bundle)
    */
   public void stop( long id ) throws BundleException {
     PDERuntimePlugin.getDefault().getBundleContext().getBundle( id ).stop();
@@ -86,8 +88,9 @@ public class LocalRegistryBackend
 
   /*
    * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend
-   * #diagnose(org.osgi.framework.Bundle)
+   * @see
+   * org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#diagnose(org.osgi.framework
+   * .Bundle)
    */
   public MultiStatus diagnose( long id ) {
     PlatformAdmin plaformAdmin = PDERuntimePlugin.getDefault().getPlatformAdmin();
@@ -264,6 +267,13 @@ public class LocalRegistryBackend
     return adapter;
   }
 
+  /**
+   * Returns a new {@link ServiceRegistration} for the given service reference. If the service being
+   * referenced is unregistered, the returned service registration will not have a bundle set.
+   * 
+   * @param ref the service reference to get the registration for
+   * @return a new service registration containing information from the service reference
+   */
   private ServiceRegistration createServiceReferenceAdapter( ServiceReference ref ) {
     ServiceRegistration service = new ServiceRegistration();
     service.setId( ( ( Long )ref.getProperty( org.osgi.framework.Constants.SERVICE_ID ) ).longValue() );
@@ -294,7 +304,7 @@ public class LocalRegistryBackend
     }
     if( classes != null ) {
       Arrays.sort( classes );
-      service.setName( new ServiceName( classes ) );
+      service.setName( new ServiceName( classes, ref ) );
       service.setProperties( properties );
     }
     return service;

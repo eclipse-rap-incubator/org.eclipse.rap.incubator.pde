@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2011 IBM Corporation and others.
+ * Copyright (c) 2009, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,62 +12,68 @@
 package org.eclipse.pde.internal.runtime.registry.model;
 
 import java.util.Arrays;
-
+import org.osgi.framework.ServiceReference;
 
 public class ServiceName extends ModelObject implements Comparable {
 
-  private String[] classes;
+	private String[] classes;
+	private ServiceReference reference;
 
-  public ServiceName( String[] classes ) {
-    this.classes = classes;
-  }
+	public ServiceName(String[] classes, ServiceReference ref) {
+		this.classes = classes;
+		this.reference = ref;
+	}
 
-  public String[] getClasses() {
-    return classes;
-  }
+	public ServiceReference getServiceReference() {
+		return this.reference;
+	}
 
-  public ModelObject[] getChildren() {
-    if( model == null ) {
-      return new ModelObject[ 0 ];
-    }
-    return model.getServices( classes );
-  }
+	public String[] getClasses() {
+		return classes;
+	}
 
-  private static int hashCode( Object[] array ) {
-    int prime = 31;
-    if( array == null )
-      return 0;
-    int result = 1;
-    for( int index = 0; index < array.length; index++ ) {
-      result = prime * result + ( array[ index ] == null
-                                                        ? 0
-                                                        : array[ index ].hashCode() );
-    }
-    return result;
-  }
+	public ModelObject[] getChildren() {
+		if (model == null) {
+			return new ModelObject[0];
+		}
+		return model.getServices(classes);
+	}
 
-  public int hashCode() {
-    final int prime = 31;
-    return prime * ServiceName.hashCode( classes );
-  }
+	private static int hashCode(Object[] array) {
+		int prime = 31;
+		if (array == null)
+			return 0;
+		int result = 1;
+		for (int index = 0; index < array.length; index++) {
+			result = prime * result + (array[index] == null ? 0 : array[index].hashCode());
+		}
+		return result;
+	}
 
-  public boolean equals( Object obj ) {
-    if( this == obj )
-      return true;
-    if( getClass() != obj.getClass() )
-      return false;
-    ServiceName other = ( ServiceName )obj;
-    return Arrays.equals( classes, other.classes );
-  }
+	public int hashCode() {
+		final int prime = 31;
+		return prime * ServiceName.hashCode(classes);
+	}
 
-  public int compareTo( Object obj ) {
-    if( obj instanceof ServiceName ) {
-      // compare first class
-      ServiceName other = ( ServiceName )obj;
-      String myClass = classes[ 0 ];
-      String otherClass = other.getClasses()[ 0 ];
-      return myClass.compareTo( otherClass );
-    }
-    return 0;
-  }
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		ServiceName other = (ServiceName) obj;
+		return Arrays.equals(classes, other.classes);
+	}
+
+	public int compareTo(Object obj) {
+		if (obj instanceof ServiceName) {
+			// compare first class
+			ServiceName other = (ServiceName) obj;
+			String myClass = classes[0];
+			String otherClass = other.getClasses()[0];
+
+			return myClass.compareTo(otherClass);
+		}
+		return 0;
+
+	}
 }

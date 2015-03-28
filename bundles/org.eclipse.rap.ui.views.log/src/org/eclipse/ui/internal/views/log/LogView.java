@@ -182,7 +182,7 @@ public class LogView extends ViewPart implements ILogListener {
 		layout.marginWidth = 0;
 		layout.marginHeight = 0;
 		composite.setLayout(layout);
-		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+//		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		readLogFile();
 		createViewer(composite);

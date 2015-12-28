@@ -8,6 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 202583, 207344
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
@@ -81,6 +82,7 @@ public class EventDetailsDialogAction extends SelectionProviderAction {
 			propertyDialog.setComparator(comparator);
 	}
 
+	@Override
 	public void run() {
 		if (propertyDialog != null && propertyDialog.isOpen()) {
 			resetSelection();

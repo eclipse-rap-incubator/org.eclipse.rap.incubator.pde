@@ -9,6 +9,7 @@
  *     Code 9 Corporation - initial API and implementation
  *     Ketan Padegaonkar <KetanPadegaonkar@gmail.com> - bug 241912
  *     Tomasz Zarna <tomasz.zarna@tasktop.com> - bug 299298
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.sections;
 
@@ -26,6 +27,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public class ActiveFormEditorSection implements ISpySection {
 
+  @Override
   public void build( ScrolledForm form, SpyFormToolkit toolkit, ExecutionEvent event ) {
     final IWorkbenchPart part = HandlerUtil.getActivePart( event );
     if( !( part instanceof FormEditor ) )
@@ -48,9 +50,13 @@ public class ActiveFormEditorSection implements ISpySection {
     section.setLayoutData( td );
     StringBuffer buffer = new StringBuffer();
     buffer.append( "<form>" ); //$NON-NLS-1$
-    buffer.append( toolkit.createClassSection( text,
-                                               NLS.bind( PDERuntimeMessages.get().SpyDialog_activePart_desc,
-                                                         "editor tab" ), new Class[] { activePage.getClass()} ) ); //$NON-NLS-1$
+    buffer.append( toolkit
+      .createClassSection( text,
+                           NLS.bind( PDERuntimeMessages.get().SpyDialog_activePart_desc,
+                                     "editor tab" ), //$NON-NLS-1$
+                           new Class[] {
+                             activePage.getClass()
+    } ) );
     buffer.append( "</form>" ); //$NON-NLS-1$
     text.setText( buffer.toString(), true, false );
     text.layout();

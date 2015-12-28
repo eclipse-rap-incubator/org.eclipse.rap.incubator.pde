@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2014 IBM Corporation and others.
+ * Copyright (c) 2003, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
@@ -30,7 +31,7 @@ public class FilterDialog extends TrayDialog {
 	// entries count limit
 	private Button limit;
 	Text limitText;
-	Spinner maxLogTailSizeSpinner;
+	Text maxLogTailSizeText;
 
 	// entry types filter
 	private Button errorCheckbox;
@@ -62,6 +63,7 @@ public class FilterDialog extends TrayDialog {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(newShell, IHelpContextIds.LOG_FILTER);
 	}
 
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
 		createEventTypesGroup(container);
@@ -109,6 +111,7 @@ public class FilterDialog extends TrayDialog {
 		limit.setText(Messages.get().LogView_FilterDialog_limitTo);
 		limit.setSelection(memento.getString(LogView.P_USE_LIMIT).equals("true")); //$NON-NLS-1$
 		limit.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				limitText.setEnabled(((Button) e.getSource()).getSelection());
 			}
@@ -116,6 +119,7 @@ public class FilterDialog extends TrayDialog {
 
 		limitText = new Text(comp, SWT.BORDER);
 		limitText.addVerifyListener(new VerifyListener() {
+			@Override
 			public void verifyText(VerifyEvent e) {
 				if (Character.isLetter(e.character)) {
 					e.doit = false;
@@ -123,12 +127,13 @@ public class FilterDialog extends TrayDialog {
 			}
 		});
 		limitText.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent e) {
 				try {
 					if (okButton == null)
 						return;
-					Integer.parseInt(limitText.getText());
-					okButton.setEnabled(true);
+					int value = Integer.parseInt(limitText.getText());
+					okButton.setEnabled(value > 0);
 				} catch (NumberFormatException e1) {
 					okButton.setEnabled(false);
 				}
@@ -140,26 +145,33 @@ public class FilterDialog extends TrayDialog {
 
 		Label maxLogTailSizeLabel = new Label(comp, SWT.NONE);
 		maxLogTailSizeLabel.setText(Messages.get().LogView_FilterDialog_maxLogTailSize);
-		maxLogTailSizeSpinner = new Spinner(comp, SWT.BORDER);
-		maxLogTailSizeSpinner.addModifyListener(new ModifyListener() {
+
+		maxLogTailSizeText = new Text(comp, SWT.BORDER);
+		maxLogTailSizeText.addVerifyListener(new VerifyListener() {
+			@Override
+			public void verifyText(VerifyEvent e) {
+				if (Character.isLetter(e.character)) {
+					e.doit = false;
+				}
+			}
+		});
+
+		maxLogTailSizeText.addModifyListener(new ModifyListener() {
+			@Override
 			public void modifyText(ModifyEvent e) {
 				try {
 					if (okButton == null)
 						return;
-					Integer.parseInt(maxLogTailSizeSpinner.getText());
-					okButton.setEnabled(true);
+					int value = Integer.parseInt(maxLogTailSizeText.getText());
+					okButton.setEnabled(value > 0);
 				} catch (NumberFormatException e1) {
 					okButton.setEnabled(false);
 				}
 			}
 		});
-		maxLogTailSizeSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		maxLogTailSizeSpinner.setValues(memento.getInteger(LogView.P_LOG_MAX_TAIL_SIZE).intValue(), 1, Integer.MAX_VALUE, 0, 1, 1);
-		maxLogTailSizeSpinner.setMinimum(1);
-		maxLogTailSizeSpinner.setIncrement(1);
-		maxLogTailSizeSpinner.setMaximum(Integer.MAX_VALUE);
-
-		maxLogTailSizeSpinner.setEnabled(limit.getSelection());
+		maxLogTailSizeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		maxLogTailSizeText.setText(memento.getString(LogView.P_LOG_MAX_TAIL_SIZE));
+		maxLogTailSizeText.setEnabled(limit.getSelection());
 	}
 
 	private void createSessionSection(Composite parent) {
@@ -201,6 +213,7 @@ public class FilterDialog extends TrayDialog {
 		gd.horizontalSpan = 2;
 		filterEnabled.setLayoutData(gd);
 		filterEnabled.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				setStackTraceFilterEnabled(filterEnabled.getSelection());
 			}
@@ -214,6 +227,7 @@ public class FilterDialog extends TrayDialog {
 		gd.horizontalIndent = 20;
 		filterList.setLayoutData(gd);
 		filterList.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				removeFilter.setEnabled(true);
 			}
@@ -224,6 +238,7 @@ public class FilterDialog extends TrayDialog {
 		addFilter.setLayoutData(gd);
 		addFilter.setText(Messages.get().FilterDialog_Add);
 		addFilter.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				addFilter();
 			}
@@ -235,6 +250,7 @@ public class FilterDialog extends TrayDialog {
 		removeFilter.setText(Messages.get().FilterDialog_Remove);
 		removeFilter.setEnabled(false);
 		removeFilter.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				removeFilter();
 			}
@@ -259,6 +275,7 @@ public class FilterDialog extends TrayDialog {
 	private void addFilter() {
 		IInputValidator validator = new IInputValidator() {
 
+			@Override
 			public String isValid(String newText) {
 				return newText.indexOf(';') >= 0 ? Messages.get().FilterDialog_FilterShouldntContainSemicolon : null;
 			}
@@ -288,11 +305,13 @@ public class FilterDialog extends TrayDialog {
 		removeFilter.setEnabled(enabled && filterList.getSelectionIndex() != -1);
 	}
 
+	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.get().OK_LABEL, true);
 		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.get().CANCEL_LABEL, false);
 	}
 
+	@Override
 	protected void okPressed() {
 		memento.putString(LogView.P_LOG_OK, okCheckbox.getSelection() ? "true" : "false"); //$NON-NLS-1$ //$NON-NLS-2$
 		memento.putString(LogView.P_LOG_INFO, infoCheckbox.getSelection() ? "true" : "false"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -300,7 +319,7 @@ public class FilterDialog extends TrayDialog {
 		memento.putString(LogView.P_LOG_ERROR, errorCheckbox.getSelection() ? "true" : "false"); //$NON-NLS-1$ //$NON-NLS-2$
 		memento.putString(LogView.P_LOG_LIMIT, limitText.getText());
 		memento.putString(LogView.P_USE_LIMIT, limit.getSelection() ? "true" : "false"); //$NON-NLS-1$ //$NON-NLS-2$
-		memento.putString(LogView.P_LOG_MAX_TAIL_SIZE, maxLogTailSizeSpinner.getText());
+		memento.putString(LogView.P_LOG_MAX_TAIL_SIZE, maxLogTailSizeText.getText());
 		memento.putString(LogView.P_SHOW_ALL_SESSIONS, showAllButton.getSelection() ? "true" : "false"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		// store Event Dialog stack trace filter preferences

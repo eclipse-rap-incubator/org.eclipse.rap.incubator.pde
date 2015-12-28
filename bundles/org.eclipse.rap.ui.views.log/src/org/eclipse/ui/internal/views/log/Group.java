@@ -4,11 +4,11 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 202583, 207344
- *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
+ *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
@@ -25,6 +25,7 @@ public class Group extends AbstractEntry {
 		this.name = name;
 	}
 
+	@Override
 	public void write(PrintWriter writer) {
 		Object[] children = getChildren(null);
 		for (int i = 0; i < children.length; i++) {
@@ -34,6 +35,7 @@ public class Group extends AbstractEntry {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,10 +8,12 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bug 211127
+ *     Arnaud Mergey <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.registry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
@@ -28,6 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.part.DrillDownAdapter;
@@ -46,11 +49,11 @@ public class RegistryBrowser extends ViewPart {
       this.actionGroupBy = groupBy;
     }
 
+    @Override
     public void run() {
       if( isChecked() ) {
         fMemento.putInteger( GROUP_BY, actionGroupBy );
-        // refreshAction takes into account checked state of
-        // fShowExtensionsOnlyAction
+        // refreshAction takes into account checked state of fShowExtensionsOnlyAction
         // (via updateItems(true)
         fRefreshAction.run();
       }
@@ -59,7 +62,7 @@ public class RegistryBrowser extends ViewPart {
 
   public static final String SHOW_RUNNING_PLUGINS = "RegistryView.showRunning.label"; //$NON-NLS-1$
   public static final String SHOW_ADVANCED_MODE = "RegistryView.showAdvancedMode.label"; //$NON-NLS-1$
-  public static final String GROUP_BY = "RegistryView.groupBy"; //$NON-NLS-1$ 
+  public static final String GROUP_BY = "RegistryView.groupBy"; //$NON-NLS-1$
   public static final String SHOW_DISABLED_MODE = "RegistryView.showDisabledMode.label"; //$NON-NLS-1$
   public static final int BUNDLES = 0;
   public static final int EXTENSION_REGISTRY = 1;
@@ -84,17 +87,18 @@ public class RegistryBrowser extends ViewPart {
   private Action fGroupByExtensionPointsAction;
   private Action fGroupByServicesAction;
   private Action fShowDisabledAction;
-  // private Action fCopyAction;
+  private Action fCopyAction;
   // advanced actions
   private Action fStartAction;
   private Action fStopAction;
   private Action fEnableAction;
   private Action fDisableAction;
   private Action fDiagnoseAction;
-  // private Clipboard fClipboard;
+// private Clipboard fClipboard;
   private DrillDownAdapter fDrillDownAdapter;
   private ViewerFilter fActiveFilter = new ViewerFilter() {
 
+    @Override
     public boolean select( Viewer viewer, Object parentElement, Object element ) {
       if( element instanceof ExtensionPoint )
         element = Platform.getBundle( ( ( ExtensionPoint )element ).getNamespaceIdentifier() );
@@ -107,6 +111,7 @@ public class RegistryBrowser extends ViewPart {
   };
   private ViewerFilter fDisabledFilter = new ViewerFilter() {
 
+    @Override
     public boolean select( Viewer viewer, Object parentElement, Object element ) {
       if( element instanceof Bundle ) {
         return !( ( Bundle )element ).isEnabled();
@@ -125,24 +130,28 @@ public class RegistryBrowser extends ViewPart {
       super( tree );
     }
 
+    @Override
     public void goInto() {
       super.goInto();
       fShowPluginsAction.setEnabled( !canGoHome() );
       fShowDisabledAction.setEnabled( !canGoHome() );
     }
 
+    @Override
     public void goBack() {
       super.goBack();
       fShowPluginsAction.setEnabled( !canGoHome() );
       fShowDisabledAction.setEnabled( !canGoHome() );
     }
 
+    @Override
     public void goHome() {
       super.goHome();
       fShowPluginsAction.setEnabled( !canGoHome() );
       fShowDisabledAction.setEnabled( !canGoHome() );
     }
 
+    @Override
     public void goInto( Object newInput ) {
       super.goInto( newInput );
       fShowPluginsAction.setEnabled( !canGoHome() );
@@ -153,21 +162,23 @@ public class RegistryBrowser extends ViewPart {
   private void initializeModel() {
     model = RegistryModelFactory.getRegistryModel( "local" ); //$NON-NLS-1$
     fTreeViewer.setInput( model );
-    listener = new RegistryBrowserModelChangeListener( RegistryBrowser.this, Display.getCurrent() );
+    listener = new RegistryBrowserModelChangeListener( RegistryBrowser.this );
     model.addModelChangeListener( listener );
-    initializeModelJob = new Job( PDERuntimeMessages.get().RegistryBrowser_InitializingView ) {
+    initializeModelJob = new Job( PDERuntimeMessages.get().RegistryBrowser_InitializingView) {
 
+      @Override
       public IStatus run( IProgressMonitor monitor ) {
         model.connect( monitor, true );
         initializeModelJob = null;
-        return monitor.isCanceled()
-                                   ? Status.CANCEL_STATUS
-                                   : Status.OK_STATUS;
+        return monitor.isCanceled( )
+                                     ? Status.CANCEL_STATUS
+                                     : Status.OK_STATUS;
       }
     };
     initializeModelJob.schedule();
   }
 
+  @Override
   public void init( IViewSite site, IMemento memento ) throws PartInitException {
     super.init( site, memento );
     if( memento == null )
@@ -190,28 +201,31 @@ public class RegistryBrowser extends ViewPart {
       fMemento.putString( SHOW_ADVANCED_MODE, "false" ); //$NON-NLS-1$
   }
 
+  @Override
   public void dispose() {
     if( initializeModelJob != null ) {
       initializeModelJob.cancel();
     }
     model.disconnect();
     model.removeModelChangeListener( listener );
-    // if (fClipboard != null) {
-    // fClipboard.dispose();
-    // }
+// if( fClipboard != null ) {
+// fClipboard.dispose();
+// }
     super.dispose();
   }
 
+  @Override
   public void createPartControl( Composite parent ) {
     // create the sash form that will contain the tree viewer & text viewer
     Composite composite = new Composite( parent, SWT.NONE );
     GridLayout layout = new GridLayout();
     layout.marginHeight = layout.marginWidth = 0;
     composite.setLayout( layout );
-    // composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+    composite.setLayoutData( new GridData( GridData.FILL_BOTH ) );
     makeActions();
     createTreeViewer( composite );
-    // fClipboard = new Clipboard(fTreeViewer.getTree().getDisplay());
+    hookDoubleClickAction();
+    // fClipboard = new Clipboard( fTreeViewer.getTree().getDisplay() );
     fillToolBar();
   }
 
@@ -234,6 +248,7 @@ public class RegistryBrowser extends ViewPart {
     fTreeViewer.setUseHashlookup( true );
     fTreeViewer.setComparator( new ViewerComparator() {
 
+      @Override
       public int compare( Viewer viewer, Object e1, Object e2 ) {
         // let Comparables compare themselves
         if( e1 instanceof Comparable
@@ -258,13 +273,13 @@ public class RegistryBrowser extends ViewPart {
     if( fShowDisabledAction.isChecked() )
       fTreeViewer.addFilter( fDisabledFilter );
     initializeModel();
-    PlatformUI.getWorkbench()
-      .getHelpSystem()
-      .setHelp( fTreeViewer.getControl(), IHelpContextIds.REGISTRY_VIEW );
+    PlatformUI.getWorkbench().getHelpSystem().setHelp( fTreeViewer.getControl(),
+                                                       IHelpContextIds.REGISTRY_VIEW );
     getViewSite().setSelectionProvider( fTreeViewer );
     MenuManager popupMenuManager = new MenuManager();
     IMenuListener listener = new IMenuListener() {
 
+      @Override
       public void menuAboutToShow( IMenuManager mng ) {
         fillContextMenu( mng );
       }
@@ -275,10 +290,25 @@ public class RegistryBrowser extends ViewPart {
     tree.setMenu( menu );
   }
 
+  private void hookDoubleClickAction() {
+    fTreeViewer.addDoubleClickListener( new IDoubleClickListener() {
+
+      @Override
+      public void doubleClick( DoubleClickEvent event ) {
+// IStructuredSelection selection = ( IStructuredSelection )fTreeViewer.getSelection();
+// if( selection.size() == 1 ) {
+// Object obj = selection.getFirstElement();
+// if( obj instanceof Bundle )
+// ManifestEditor.openPluginEditor( ( ( Bundle )obj ).getSymbolicName() );
+// }
+      }
+    } );
+  }
+
   private void fillToolBar() {
     fDrillDownAdapter = new RegistryDrillDownAdapter( fTreeViewer );
     IActionBars bars = getViewSite().getActionBars();
-    // bars.setGlobalActionHandler(ActionFactory.COPY.getId(), fCopyAction);
+    bars.setGlobalActionHandler( ActionFactory.COPY.getId(), fCopyAction );
     IToolBarManager mng = bars.getToolBarManager();
     fDrillDownAdapter.addNavigationActions( mng );
     mng.add( fRefreshAction );
@@ -300,8 +330,8 @@ public class RegistryBrowser extends ViewPart {
   private void fillContextMenu( IMenuManager manager ) {
     manager.add( fRefreshAction );
     manager.add( new Separator() );
-    // manager.add(fCopyAction);
-    // manager.add(new Separator());
+    manager.add( fCopyAction );
+    manager.add( new Separator() );
     fDrillDownAdapter.addNavigationActions( manager );
     manager.add( new Separator() );
     // check if we should enable advanced actions
@@ -326,6 +356,7 @@ public class RegistryBrowser extends ViewPart {
     manager.add( fShowAdvancedOperationsAction );
   }
 
+  @Override
   public void saveState( IMemento memento ) {
     if( memento == null || fMemento == null || fTreeViewer == null )
       return;
@@ -335,6 +366,7 @@ public class RegistryBrowser extends ViewPart {
     memento.putMemento( fMemento );
   }
 
+  @Override
   public void setFocus() {
     Text filterText = fFilteredTree.getFilterControl();
     if( filterText != null ) {
@@ -346,11 +378,13 @@ public class RegistryBrowser extends ViewPart {
    * toolbar and context menu actions
    */
   private void makeActions() {
-    fRefreshAction = new Action( "refresh" ) { //$NON-NLS-1$
+    fRefreshAction = new Action( "refresh") { //$NON-NLS-1$
 
+      @Override
       public void run() {
         BusyIndicator.showWhile( fTreeViewer.getTree().getDisplay(), new Runnable() {
 
+          @Override
           public void run() {
             refresh( fTreeViewer.getInput() );
           }
@@ -361,70 +395,76 @@ public class RegistryBrowser extends ViewPart {
     fRefreshAction.setToolTipText( PDERuntimeMessages.get().RegistryView_refresh_tooltip );
     fRefreshAction.setImageDescriptor( PDERuntimePluginImages.DESC_REFRESH );
     fRefreshAction.setDisabledImageDescriptor( PDERuntimePluginImages.DESC_REFRESH_DISABLED );
-    fShowPluginsAction = new Action( PDERuntimeMessages.get().RegistryView_showRunning_label ) {
+    fShowPluginsAction = new Action( PDERuntimeMessages.get().RegistryView_showRunning_label) {
 
+      @Override
       public void run() {
         if( fShowPluginsAction.isChecked() ) {
           fTreeViewer.addFilter( fActiveFilter );
         } else {
           fTreeViewer.removeFilter( fActiveFilter );
         }
-        updateTitle();
+        updateTitle( );
       }
     };
     fShowPluginsAction.setChecked( fMemento.getString( SHOW_RUNNING_PLUGINS ).equals( "true" ) ); //$NON-NLS-1$
-    fShowDisabledAction = new Action( PDERuntimeMessages.get().RegistryView_showDisabled_label ) {
+    fShowDisabledAction = new Action( PDERuntimeMessages.get().RegistryView_showDisabled_label) {
 
+      @Override
       public void run() {
         if( fShowDisabledAction.isChecked() ) {
           fTreeViewer.addFilter( fDisabledFilter );
         } else {
           fTreeViewer.removeFilter( fDisabledFilter );
         }
-        updateTitle();
+        updateTitle( );
       }
     };
     fShowDisabledAction.setChecked( fMemento.getString( SHOW_DISABLED_MODE ).equals( "true" ) ); //$NON-NLS-1$
-    // fCopyAction = new Action(
-    // PDERuntimeMessages.get().RegistryBrowser_copy_label) {
-    // public void run() {
-    // ITreeSelection selection = (ITreeSelection) fFilteredTree
-    // .getViewer().getSelection();
-    // if (selection.isEmpty()) {
-    // return;
-    // }
-    //
-    // String textVersion = ((ILabelProvider) fTreeViewer
-    // .getLabelProvider()).getText(selection
-    // .getFirstElement());
-    // if ((textVersion != null) && (textVersion.trim().length() > 0)) {
-    // // set the clipboard contents
-    // fClipboard.setContents(new Object[] { textVersion },
-    // new Transfer[] { TextTransfer.getInstance() });
-    // }
-    // }
-    // };
-    // fCopyAction.setImageDescriptor(PDERuntimePluginImages.COPY_QNAME);
+    fCopyAction = new Action( PDERuntimeMessages.get().RegistryBrowser_copy_label) {
+
+      @Override
+      public void run() {
+        ITreeSelection selection = ( ITreeSelection )fFilteredTree.getViewer().getSelection();
+        if( selection.isEmpty() ) {
+          return;
+        }
+// String textVersion = ( ( ILabelProvider )fTreeViewer.getLabelProvider() )
+// .getText( selection.getFirstElement() );
+// if( ( textVersion != null ) && ( textVersion.trim().length() > 0 ) ) {
+// // set the clipboard contents
+// fClipboard.setContents( new Object[] {
+// textVersion
+// }, new Transfer[] {
+// TextTransfer.getInstance()
+// } );
+// }
+      }
+    };
+    fCopyAction.setImageDescriptor( PDERuntimePluginImages.COPY_QNAME );
     fGroupByBundlesAction = new GroupByAction( PDERuntimeMessages.get().RegistryBrowser_Bundle,
                                                BUNDLES );
     int groupBy = getGroupBy();
     fGroupByBundlesAction.setChecked( groupBy == BUNDLES );
-    fGroupByExtensionPointsAction = new GroupByAction( PDERuntimeMessages.get().RegistryBrowser_ExtensionPoint,
-                                                       EXTENSION_REGISTRY );
+    fGroupByExtensionPointsAction = new GroupByAction( PDERuntimeMessages
+      .get().RegistryBrowser_ExtensionPoint, EXTENSION_REGISTRY );
     fGroupByExtensionPointsAction.setChecked( groupBy == EXTENSION_REGISTRY );
     fGroupByServicesAction = new GroupByAction( PDERuntimeMessages.get().RegistryBrowser_Service,
                                                 SERVICES );
     fGroupByServicesAction.setChecked( groupBy == SERVICES );
-    fShowAdvancedOperationsAction = new Action( PDERuntimeMessages.get().RegistryView_showAdvanced_label )
+    fShowAdvancedOperationsAction = new Action( PDERuntimeMessages
+      .get().RegistryView_showAdvanced_label)
     {
 
-      public void run() { // do nothing
+      @Override
+      public void run( ) { // do nothing
       }
     };
-    fShowAdvancedOperationsAction.setChecked( fMemento.getString( SHOW_ADVANCED_MODE )
-      .equals( "true" ) ); //$NON-NLS-1$
-    fStartAction = new Action( PDERuntimeMessages.get().RegistryView_startAction_label ) {
+    fShowAdvancedOperationsAction
+      .setChecked( fMemento.getString( SHOW_ADVANCED_MODE ).equals( "true" ) ); //$NON-NLS-1$
+    fStartAction = new Action( PDERuntimeMessages.get().RegistryView_startAction_label) {
 
+      @Override
       public void run() {
         try {
           List bundles = getSelectedBundles();
@@ -437,8 +477,9 @@ public class RegistryBrowser extends ViewPart {
         }
       }
     };
-    fStopAction = new Action( PDERuntimeMessages.get().RegistryView_stopAction_label ) {
+    fStopAction = new Action( PDERuntimeMessages.get().RegistryView_stopAction_label) {
 
+      @Override
       public void run() {
         try {
           List bundles = getSelectedBundles();
@@ -451,28 +492,31 @@ public class RegistryBrowser extends ViewPart {
         }
       }
     };
-    fEnableAction = new Action( PDERuntimeMessages.get().RegistryView_enableAction_label ) {
+    fEnableAction = new Action( PDERuntimeMessages.get().RegistryView_enableAction_label) {
 
+      @Override
       public void run() {
         List bundles = getSelectedBundles();
         for( Iterator it = bundles.iterator(); it.hasNext(); ) {
           Bundle bundle = ( Bundle )it.next();
-          bundle.enable();
+          bundle.enable( );
         }
       }
     };
-    fDisableAction = new Action( PDERuntimeMessages.get().RegistryView_disableAction_label ) {
+    fDisableAction = new Action( PDERuntimeMessages.get().RegistryView_disableAction_label) {
 
+      @Override
       public void run() {
         List bundles = getSelectedBundles();
         for( Iterator it = bundles.iterator(); it.hasNext(); ) {
           Bundle bundle = ( Bundle )it.next();
-          bundle.disable();
+          bundle.disable( );
         }
       }
     };
-    fDiagnoseAction = new Action( PDERuntimeMessages.get().RegistryView_diagnoseAction_label ) {
+    fDiagnoseAction = new Action( PDERuntimeMessages.get().RegistryView_diagnoseAction_label) {
 
+      @Override
       public void run() {
         List bundles = getSelectedBundles();
         for( Iterator it = bundles.iterator(); it.hasNext(); ) {
@@ -487,17 +531,19 @@ public class RegistryBrowser extends ViewPart {
                                             IStatus.WARNING );
             dialog.open();
           } else {
-            MessageDialog.openInformation( getSite().getShell(),
-                                           PDERuntimeMessages.get().RegistryView_diag_dialog_title,
-                                           PDERuntimeMessages.get().RegistryView_no_unresolved_constraints );
+            MessageDialog
+              .openInformation( getSite().getShell(),
+                                PDERuntimeMessages.get().RegistryView_diag_dialog_title,
+                                PDERuntimeMessages.get().RegistryView_no_unresolved_constraints );
           }
         }
       }
     };
-    fCollapseAllAction = new Action( "collapseAll" ) { //$NON-NLS-1$
+    fCollapseAllAction = new Action( "collapseAll") { //$NON-NLS-1$
 
+      @Override
       public void run() {
-        fTreeViewer.collapseAll();
+        fTreeViewer.collapseAll( );
       }
     };
     fCollapseAllAction.setText( PDERuntimeMessages.get().RegistryView_collapseAll_label );
@@ -540,9 +586,14 @@ public class RegistryBrowser extends ViewPart {
     }
     if( tree == null )
       return NLS.bind( PDERuntimeMessages.get().RegistryView_titleSummary, ( new String[] {
-        "0", "0", type} ) ); //$NON-NLS-1$ //$NON-NLS-2$
+        "0", //$NON-NLS-1$
+        "0", //$NON-NLS-1$
+        type
+      } ) );
     return NLS.bind( PDERuntimeMessages.get().RegistryView_titleSummary, ( new String[] {
-      Integer.toString( tree.getItemCount() ), Integer.toString( total ), type
+      Integer.toString( tree.getItemCount() ),
+      Integer.toString( total ),
+      type
     } ) );
   }
 
@@ -667,6 +718,7 @@ public class RegistryBrowser extends ViewPart {
     } else {
       Runnable runnable = new Runnable() {
 
+        @Override
         public void run() {
           try {
             Thread.sleep( REFRESH_DELAY );
@@ -678,6 +730,7 @@ public class RegistryBrowser extends ViewPart {
             return;
           fTreeViewer.getTree().getDisplay().asyncExec( new Runnable() {
 
+            @Override
             public void run() {
               if( !fTreeViewer.getTree().isDisposed() ) {
                 fTreeViewer.refresh();
@@ -716,6 +769,7 @@ public class RegistryBrowser extends ViewPart {
     }
   }
 
+  @Override
   public Object getAdapter( Class clazz ) {
     if( ILabelProvider.class.equals( clazz ) ) {
       return fLabelProvider;
@@ -724,5 +778,19 @@ public class RegistryBrowser extends ViewPart {
       return fContentProvider;
     }
     return super.getAdapter( clazz );
+  }
+
+  /**
+   * Internal api to set group_by value
+   * 
+   * @param newGroupBy returns the old group_by value.
+   */
+  public int showGroupBy( int newGroupBy ) {
+    int previousGroupBy = getGroupBy();
+    if( fTreeViewer != null && !fTreeViewer.getControl().isDisposed() ) {
+      fMemento.putInteger( GROUP_BY, newGroupBy );
+      fRefreshAction.run();
+    }
+    return previousGroupBy;
   }
 }

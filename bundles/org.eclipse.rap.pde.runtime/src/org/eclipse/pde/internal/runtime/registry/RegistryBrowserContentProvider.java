@@ -16,130 +16,162 @@ import java.util.List;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.pde.internal.runtime.registry.model.*;
 
-
 public class RegistryBrowserContentProvider implements ITreeContentProvider {
 
-  public boolean isInExtensionSet;
-  private RegistryBrowser fRegistryBrowser;
+	public boolean isInExtensionSet;
 
-  public RegistryBrowserContentProvider( RegistryBrowser registryBrowser ) {
-    fRegistryBrowser = registryBrowser;
-  }
+	private RegistryBrowser fRegistryBrowser;
 
-  public void dispose() { // nothing to dispose
-  }
+	public RegistryBrowserContentProvider(RegistryBrowser registryBrowser) {
+		fRegistryBrowser = registryBrowser;
+	}
 
-  public Object[] getElements( Object element ) {
-    return getChildren( element );
-  }
+	@Override
+	public void dispose() { // nothing to dispose
+	}
 
-  public Object[] getChildren( Object element ) {
-    if( element instanceof RegistryModel ) {
-      RegistryModel model = ( RegistryModel )element;
-      switch( fRegistryBrowser.getGroupBy() ) {
-        case ( RegistryBrowser.BUNDLES ):
-          return model.getBundles();
-        case ( RegistryBrowser.EXTENSION_REGISTRY ):
-          return model.getExtensionPoints();
-        case ( RegistryBrowser.SERVICES ):
-          return model.getServiceNames();
-      }
-      return null;
-    }
-    if( element instanceof Extension )
-      return ( ( Extension )element ).getConfigurationElements();
-    isInExtensionSet = false;
-    if( element instanceof ExtensionPoint )
-      return ( ( ExtensionPoint )element ).getExtensions().toArray();
-    if( element instanceof ConfigurationElement )
-      return ( ( ConfigurationElement )element ).getElements();
-    if( element instanceof Bundle ) {
-      if( fRegistryBrowser.getGroupBy() != RegistryBrowser.BUNDLES ) // expands only in Bundles mode
-        return null;
-      Bundle bundle = ( Bundle )element;
-      List folders = new ArrayList( 9 );
-      folders.add( new Attribute( Attribute.F_LOCATION, bundle.getLocation() ) );
-      if( bundle.getImports().length > 0 )
-        folders.add( new Folder( Folder.F_IMPORTS, bundle ) );
-      if( bundle.getImportedPackages().length > 0 )
-        folders.add( new Folder( Folder.F_IMPORTED_PACKAGES, bundle ) );
-      if( bundle.getExportedPackages().length > 0 )
-        folders.add( new Folder( Folder.F_EXPORTED_PACKAGES, bundle ) );
-      if( bundle.getLibraries().length > 0 )
-        folders.add( new Folder( Folder.F_LIBRARIES, bundle ) );
-      if( bundle.getExtensionPoints().length > 0 )
-        folders.add( new Folder( Folder.F_EXTENSION_POINTS, bundle ) );
-      if( bundle.getExtensions().length > 0 )
-        folders.add( new Folder( Folder.F_EXTENSIONS, bundle ) );
-      if( bundle.getRegisteredServices().length > 0 )
-        folders.add( new Folder( Folder.F_REGISTERED_SERVICES, bundle ) );
-      if( bundle.getServicesInUse().length > 0 )
-        folders.add( new Folder( Folder.F_SERVICES_IN_USE, bundle ) );
-      if( bundle.getFragments().length > 0 )
-        folders.add( new Folder( Folder.F_FRAGMENTS, bundle ) );
-      return folders.toArray();
-    }
-    isInExtensionSet = false;
-    if( element instanceof Folder ) {
-      Folder folder = ( Folder )element;
-      isInExtensionSet = folder.getId() == Folder.F_EXTENSIONS;
-      ModelObject[] objs = folder.getChildren();
-      if( folder.getId() == Folder.F_USING_BUNDLES ) {
-        ModelObject[] result = new ModelObject[ objs.length ];
-        ILabelProvider labelProvider = ( ILabelProvider )fRegistryBrowser.getAdapter( ILabelProvider.class );
-        for( int i = 0; i < objs.length; i++ ) {
-          result[ i ] = new Attribute( Attribute.F_BUNDLE, labelProvider.getText( objs[ i ] ) );
-        }
-        objs = result;
-      }
-      return objs;
-    }
-    if( element instanceof ConfigurationElement ) {
-      return ( ( ConfigurationElement )element ).getElements();
-    }
-    if( element instanceof ExtensionPoint ) {
-      ExtensionPoint extensionPoint = ( ExtensionPoint )element;
-      Object[] objs = extensionPoint.getExtensions().toArray();
-      return objs;
-    }
-    if( element instanceof ServiceName ) {
-      return ( ( ServiceName )element ).getChildren();
-    }
-    if( element instanceof ServiceRegistration ) {
-      ServiceRegistration service = ( ServiceRegistration )element;
-      List folders = new ArrayList();
-      if( service.getProperties().length > 0 )
-        folders.add( new Folder( Folder.F_PROPERTIES, service ) );
-      if( service.getUsingBundleIds().length > 0 )
-        folders.add( new Folder( Folder.F_USING_BUNDLES, service ) );
-      return folders.toArray();
-    }
-    if( element instanceof Object[] ) {
-      return ( Object[] )element;
-    }
-    return null;
-  }
+	@Override
+	public Object[] getElements(Object element) {
+		return getChildren(element);
+	}
 
-  public Object getParent( Object element ) {
-    if( !( element instanceof ModelObject ) ) {
-      return null;
-    }
-    if( element instanceof Folder ) {
-      return ( ( Folder )element ).getParent();
-    }
-    return null;
-  }
+	@Override
+	public Object[] getChildren(Object element) {
+		if (element instanceof RegistryModel) {
+			RegistryModel model = (RegistryModel) element;
 
-  public boolean hasChildren( Object element ) {
-    // Bundle and ServiceRegistration always have children
-    if( element instanceof Bundle )
-      return true;
-    if( element instanceof ServiceRegistration )
-      return true;
-    Object[] children = getChildren( element );
-    return children != null && children.length > 0;
-  }
+			switch (fRegistryBrowser.getGroupBy()) {
+				case (RegistryBrowser.BUNDLES) :
+					return model.getBundles();
+				case (RegistryBrowser.EXTENSION_REGISTRY) :
+					return model.getExtensionPoints();
+				case (RegistryBrowser.SERVICES) :
+					return model.getServiceNames();
+			}
 
-  public void inputChanged( Viewer viewer, Object oldInput, Object newInput ) { // do nothing
-  }
+			return null;
+		}
+
+		if (element instanceof Extension)
+			return ((Extension) element).getConfigurationElements();
+
+		isInExtensionSet = false;
+		if (element instanceof ExtensionPoint)
+			return ((ExtensionPoint) element).getExtensions().toArray();
+
+		if (element instanceof ConfigurationElement)
+			return ((ConfigurationElement) element).getElements();
+
+		if (element instanceof Bundle) {
+			if (fRegistryBrowser.getGroupBy() != RegistryBrowser.BUNDLES) // expands only in Bundles mode
+				return null;
+
+			Bundle bundle = (Bundle) element;
+
+			List folders = new ArrayList(9);
+
+			folders.add(new Attribute(Attribute.F_LOCATION, bundle.getLocation()));
+			if (bundle.getImports().length > 0)
+				folders.add(new Folder(Folder.F_IMPORTS, bundle));
+			if (bundle.getImportedPackages().length > 0)
+				folders.add(new Folder(Folder.F_IMPORTED_PACKAGES, bundle));
+			if (bundle.getExportedPackages().length > 0)
+				folders.add(new Folder(Folder.F_EXPORTED_PACKAGES, bundle));
+			if (bundle.getLibraries().length > 0)
+				folders.add(new Folder(Folder.F_LIBRARIES, bundle));
+			if (bundle.getExtensionPoints().length > 0)
+				folders.add(new Folder(Folder.F_EXTENSION_POINTS, bundle));
+			if (bundle.getExtensions().length > 0)
+				folders.add(new Folder(Folder.F_EXTENSIONS, bundle));
+			if (bundle.getRegisteredServices().length > 0)
+				folders.add(new Folder(Folder.F_REGISTERED_SERVICES, bundle));
+			if (bundle.getServicesInUse().length > 0)
+				folders.add(new Folder(Folder.F_SERVICES_IN_USE, bundle));
+			if (bundle.getFragments().length > 0)
+				folders.add(new Folder(Folder.F_FRAGMENTS, bundle));
+
+			return folders.toArray();
+		}
+
+		isInExtensionSet = false;
+
+		if (element instanceof Folder) {
+			Folder folder = (Folder) element;
+			isInExtensionSet = folder.getId() == Folder.F_EXTENSIONS;
+			ModelObject[] objs = folder.getChildren();
+			if (folder.getId() == Folder.F_USING_BUNDLES) {
+				ModelObject[] result = new ModelObject[objs.length];
+				ILabelProvider labelProvider = (ILabelProvider) fRegistryBrowser.getAdapter(ILabelProvider.class);
+
+				for (int i = 0; i < objs.length; i++) {
+					result[i] = new Attribute(Attribute.F_BUNDLE, labelProvider.getText(objs[i]));
+				}
+
+				objs = result;
+			}
+			return objs;
+		}
+		if (element instanceof ConfigurationElement) {
+			return ((ConfigurationElement) element).getElements();
+		}
+
+		if (element instanceof ExtensionPoint) {
+			ExtensionPoint extensionPoint = (ExtensionPoint) element;
+			Object[] objs = extensionPoint.getExtensions().toArray();
+			return objs;
+		}
+
+		if (element instanceof ServiceName) {
+			return ((ServiceName) element).getChildren();
+		}
+
+		if (element instanceof ServiceRegistration) {
+			ServiceRegistration service = (ServiceRegistration) element;
+
+			List folders = new ArrayList();
+
+			if (service.getProperties().length > 0)
+				folders.add(new Folder(Folder.F_PROPERTIES, service));
+			if (service.getUsingBundleIds().length > 0)
+				folders.add(new Folder(Folder.F_USING_BUNDLES, service));
+
+			return folders.toArray();
+		}
+
+		if (element instanceof Object[]) {
+			return (Object[]) element;
+		}
+
+		return null;
+	}
+
+	@Override
+	public Object getParent(Object element) {
+		if (!(element instanceof ModelObject)) {
+			return null;
+		}
+
+		if (element instanceof Folder) {
+			return ((Folder) element).getParent();
+		}
+
+		return null;
+	}
+
+	@Override
+	public boolean hasChildren(Object element) {
+		// Bundle and ServiceRegistration always have children
+		if (element instanceof Bundle)
+			return true;
+		if (element instanceof ServiceRegistration)
+			return true;
+
+		Object[] children = getChildren(element);
+		return children != null && children.length > 0;
+	}
+
+	@Override
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { // do nothing
+	}
+
 }

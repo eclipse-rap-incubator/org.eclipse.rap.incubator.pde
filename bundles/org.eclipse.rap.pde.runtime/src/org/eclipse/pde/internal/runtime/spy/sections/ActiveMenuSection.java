@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2010 EclipseSource Corporation and others.
+ * Copyright (c) 2009, 2015 EclipseSource Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,6 +8,7 @@
  * Contributors:
  *     EclipseSource Corporation - initial API and implementation
  *     Anyware Technologies - ongoing enhancements
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.sections;
 
@@ -17,7 +18,6 @@ import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.*;
 import org.eclipse.pde.internal.runtime.PDERuntimeMessages;
-import org.eclipse.pde.internal.runtime.PDERuntimePlugin;
 import org.eclipse.pde.internal.runtime.spy.SpyFormToolkit;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IActionDelegate;
@@ -26,7 +26,7 @@ import org.eclipse.ui.forms.widgets.*;
 import org.eclipse.ui.internal.*;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.osgi.framework.Bundle;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.FrameworkUtil;
 
 
 /**
@@ -53,10 +53,11 @@ public class ActiveMenuSection implements ISpySection {
         String id = item.getId();
         if( id != null ) {
           buffer.append( toolkit.createIdentifierSection( text,
-                                                          PDERuntimeMessages.get().ActiveMenuSection_0,
+                                                          PDERuntimeMessages
+                                                            .get().ActiveMenuSection_0,
                                                           new String[] {
                                                             id
-                                                          } ) );
+          } ) );
         }
         if( object instanceof ContributionItem ) {
           createLocationURI( toolkit, object, text, buffer, id );
@@ -77,12 +78,15 @@ public class ActiveMenuSection implements ISpySection {
     IContributionManager parent = ( ( ContributionItem )object ).getParent();
     if( parent instanceof IMenuManager ) {
       String parentId = ( ( IMenuManager )parent ).getId();
-      String locationURI = "menu:" + parentId + ( id == null ? "?after=additions" : "?after=" + id ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-      buffer.append( toolkit.createIdentifierSection( text,
-                                                      PDERuntimeMessages.get().ActiveMenuSection_7,
-                                                      new String[] {
-                                                        locationURI
-                                                      } ) );
+      String locationURI = "menu:" //$NON-NLS-1$
+                           + parentId
+                           + ( id == null
+                                          ? "?after=additions" //$NON-NLS-1$
+                                          : "?after=" + id ); //$NON-NLS-1$
+      buffer.append( toolkit
+        .createIdentifierSection( text, PDERuntimeMessages.get().ActiveMenuSection_7, new String[] {
+          locationURI
+      } ) );
     } else if( parent instanceof ToolBarManager ) {
       ToolBar bar = ( ( ToolBarManager )parent ).getControl();
       if( bar.getParent() instanceof CoolBar ) {
@@ -93,12 +97,17 @@ public class ActiveMenuSection implements ISpySection {
             Object o = coolItem.getData();
             if( o instanceof ToolBarContributionItem ) {
               String parentId = ( ( ToolBarContributionItem )o ).getId();
-              String locationURI = "toolbar:" + parentId + ( id == null ? "?after=additions" : "?after=" + id ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+              String locationURI = "toolbar:" //$NON-NLS-1$
+                                   + parentId
+                                   + ( id == null
+                                                  ? "?after=additions" //$NON-NLS-1$
+                                                  : "?after=" + id ); //$NON-NLS-1$
               buffer.append( toolkit.createIdentifierSection( text,
-                                                              PDERuntimeMessages.get().ActiveMenuSection_7,
+                                                              PDERuntimeMessages
+                                                                .get().ActiveMenuSection_7,
                                                               new String[] {
                                                                 locationURI
-                                                              } ) );
+              } ) );
             }
             continue;
           }
@@ -116,11 +125,10 @@ public class ActiveMenuSection implements ISpySection {
     // check for action set information
     if( item instanceof IActionSetContributionItem ) {
       IActionSetContributionItem actionItem = ( IActionSetContributionItem )item;
-      buffer.append( toolkit.createIdentifierSection( text,
-                                                      PDERuntimeMessages.get().ActiveMenuSection_1,
-                                                      new String[] {
-                                                        actionItem.getActionSetId()
-                                                      } ) );
+      buffer.append( toolkit
+        .createIdentifierSection( text, PDERuntimeMessages.get().ActiveMenuSection_1, new String[] {
+          actionItem.getActionSetId()
+      } ) );
     }
     if( item instanceof ActionContributionItem ) {
       createActionContributionItemText( item, buffer, toolkit, text );
@@ -130,16 +138,14 @@ public class ActiveMenuSection implements ISpySection {
     } else if( item instanceof CommandContributionItem ) { // TODO... this is hard...
       CommandContributionItem contributionItem = ( CommandContributionItem )item;
       Command command = contributionItem.getCommand().getCommand();
-      buffer.append( toolkit.createClassSection( text,
-                                                 PDERuntimeMessages.get().ActiveMenuSection_2,
-                                                 new Class[] {
-                                                   command.getClass()
-                                                 } ) );
-      buffer.append( toolkit.createClassSection( text,
-                                                 PDERuntimeMessages.get().ActiveMenuSection_3,
-                                                 new Class[] {
-                                                   command.getHandler().getClass()
-                                                 } ) );
+      buffer.append( toolkit
+        .createClassSection( text, PDERuntimeMessages.get().ActiveMenuSection_2, new Class[] {
+          command.getClass()
+      } ) );
+      buffer.append( toolkit
+        .createClassSection( text, PDERuntimeMessages.get().ActiveMenuSection_3, new Class[] {
+          command.getHandler().getClass()
+      } ) );
     }
   }
 
@@ -152,11 +158,10 @@ public class ActiveMenuSection implements ISpySection {
     IAction action = actionItem.getAction();
     String id = action.getActionDefinitionId();
     if( id != null ) {
-      buffer.append( toolkit.createIdentifierSection( text,
-                                                      PDERuntimeMessages.get().ActiveMenuSection_4,
-                                                      new String[] {
-                                                        action.getActionDefinitionId()
-                                                      } ) );
+      buffer.append( toolkit
+        .createIdentifierSection( text, PDERuntimeMessages.get().ActiveMenuSection_4, new String[] {
+          action.getActionDefinitionId()
+      } ) );
     }
     if( action instanceof PluginAction ) {
       PluginAction pluginAction = ( PluginAction )action;
@@ -165,13 +170,11 @@ public class ActiveMenuSection implements ISpySection {
     } else {
       // normal JFace Actions
       Class clazz = action.getClass();
-      buffer.append( toolkit.createClassSection( text,
-                                                 PDERuntimeMessages.get().ActiveMenuSection_5,
-                                                 new Class[] {
-                                                   clazz
-                                                 } ) );
-      PackageAdmin admin = PDERuntimePlugin.getDefault().getPackageAdmin();
-      Bundle bundle = admin.getBundle( clazz );
+      buffer.append( toolkit
+        .createClassSection( text, PDERuntimeMessages.get().ActiveMenuSection_5, new Class[] {
+          clazz
+      } ) );
+      Bundle bundle = FrameworkUtil.getBundle( clazz );
       toolkit.generatePluginDetailsText( bundle, null, "meow", buffer, text ); //$NON-NLS-1$
     }
   }
@@ -193,28 +196,25 @@ public class ActiveMenuSection implements ISpySection {
         retargetAction = ( RetargetAction )field.get( pluginAction );
       }
       // if there's no retarget action OR if the pluginAction is not a WWinPluginAction, let's try
-// to find the action delegate
+      // to find the action delegate
       if( retargetAction == null ) {
         Field field = clazz.getDeclaredField( "delegate" ); //$NON-NLS-1$
         field.setAccessible( true );
         delegate = ( IActionDelegate )field.get( pluginAction );
         if( delegate == null ) { // have to invoke createDelegate if we don't have one yet...
-          Method method = clazz.getDeclaredMethod( "createDelegate", null ); //$NON-NLS-1$
+          Method method = clazz.getDeclaredMethod( "createDelegate" ); //$NON-NLS-1$
           method.setAccessible( true );
-          method.invoke( pluginAction, null );
+          method.invoke( pluginAction );
           delegate = ( IActionDelegate )field.get( pluginAction );
         }
       }
-      buffer.append( toolkit.createClassSection( text,
-                                                 PDERuntimeMessages.get().ActiveMenuSection_6,
-                                                 new Class[] {
-                                                   ( retargetAction == null )
-                                                                             ? delegate.getClass()
-                                                                             : retargetAction.getActionHandler()
-                                                                               .getClass()
-                                                 } ) );
-      PackageAdmin admin = PDERuntimePlugin.getDefault().getPackageAdmin();
-      Bundle bundle = admin.getBundle( clazz );
+      buffer.append( toolkit
+        .createClassSection( text, PDERuntimeMessages.get().ActiveMenuSection_6, new Class[] {
+          ( retargetAction == null )
+                                     ? delegate.getClass()
+                                     : retargetAction.getActionHandler().getClass()
+      } ) );
+      Bundle bundle = FrameworkUtil.getBundle( clazz );
       toolkit.generatePluginDetailsText( bundle, null, "menu item", buffer, text ); //$NON-NLS-1$
     } catch( Exception e ) {
       Class superclass = clazz.getSuperclass();
@@ -224,6 +224,7 @@ public class ActiveMenuSection implements ISpySection {
     }
   }
 
+  @Override
   public void build( ScrolledForm form, SpyFormToolkit toolkit, ExecutionEvent event ) {
     // do nothing
   }

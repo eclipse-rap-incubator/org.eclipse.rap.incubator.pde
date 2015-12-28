@@ -8,6 +8,7 @@
  * Contributors:
  *     Chris Aniszczyk <zx@us.ibm.com> - initial API and implementation
  *     Heiko Seeberger - changes for bug 237764
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.sections;
 
@@ -34,19 +35,21 @@ import org.osgi.framework.Bundle;
  */
 public class ActivePartSection implements ISpySection {
 
+  @Override
   public void build( ScrolledForm form, SpyFormToolkit toolkit, ExecutionEvent event ) {
     IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow( event );
     if( window == null ) // if we don't have an active workbench, we don't have a valid selection to
-// analyze
+                         // analyze
       return;
     final IWorkbenchPart part = HandlerUtil.getActivePart( event );
     if( part == null )
       return; // (Bug 237764) if no active part let's do nothing ...
     String partType = part instanceof IEditorPart
-                                                 ? "editor" : "view"; //$NON-NLS-1$ //$NON-NLS-2$
+                                                  ? "editor" //$NON-NLS-1$
+                                                  : "view"; //$NON-NLS-1$
     Section section = toolkit.createSection( form.getBody(), ExpandableComposite.TITLE_BAR );
-    section.setText( NLS.bind( PDERuntimeMessages.get().SpyDialog_activePart_title, part.getSite()
-      .getRegisteredName() ) );
+    section.setText( NLS.bind( PDERuntimeMessages.get().SpyDialog_activePart_title,
+                               part.getSite().getRegisteredName() ) );
     FormText text = toolkit.createFormText( section, true );
     section.setClient( text );
     TableWrapData td = new TableWrapData();
@@ -57,21 +60,23 @@ public class ActivePartSection implements ISpySection {
     StringBuffer buffer = new StringBuffer();
     buffer.append( "<form>" ); //$NON-NLS-1$
     // time to analyze the active part
-    buffer.append( toolkit.createClassSection( text,
-                                               NLS.bind( PDERuntimeMessages.get().SpyDialog_activePart_desc,
-                                                         partType ),
-                                               new Class[] {
-                                                 part.getClass()
-                                               } ) );
+    buffer
+      .append( toolkit.createClassSection( text,
+                                           NLS.bind( PDERuntimeMessages
+                                             .get().SpyDialog_activePart_desc, partType ),
+                                           new Class[] {
+                                             part.getClass()
+    } ) );
     if( part instanceof PageBookView ) {
       PageBookView outline = ( PageBookView )part;
       IPage currentPage = outline.getCurrentPage();
       if( currentPage != null ) {
         buffer.append( toolkit.createClassSection( text,
-                                                   PDERuntimeMessages.get().SpyDialog_activePageBook_title,
+                                                   PDERuntimeMessages
+                                                     .get().SpyDialog_activePageBook_title,
                                                    new Class[] {
                                                      currentPage.getClass()
-                                                   } ) );
+        } ) );
       }
     }
     // time to analyze the contributing plug-in

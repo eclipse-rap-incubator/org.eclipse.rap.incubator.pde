@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 20012 IBM Corporation and others.
+ * Copyright (c) 2007, 2012 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     Chris Aniszczyk <zx@us.ibm.com> - initial API and implementation
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.sections;
 
@@ -27,10 +28,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class ActiveSelectionSection implements ISpySection {
 
+  @Override
   public void build( ScrolledForm form, SpyFormToolkit toolkit, ExecutionEvent event ) {
     IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow( event );
     if( window == null ) // if we don't have an active workbench, we don't have a valid selection to
-// analyze
+                         // analyze
       return;
     // analyze the selection
     ISelection selection = HandlerUtil.getCurrentSelection( event );
@@ -50,13 +52,15 @@ public class ActiveSelectionSection implements ISpySection {
       StringBuffer buffer = new StringBuffer();
       buffer.append( "<form>" ); //$NON-NLS-1$
       buffer.append( toolkit.createClassSection( text,
-                                                 PDERuntimeMessages.get().SpyDialog_activeSelection_desc,
+                                                 PDERuntimeMessages
+                                                   .get().SpyDialog_activeSelection_desc,
                                                  new Class[] {
                                                    clazz
-                                                 } ) );
+      } ) );
       Class[] interfaces = clazz.getInterfaces();
       buffer.append( toolkit.createInterfaceSection( text,
-                                                     PDERuntimeMessages.get().SpyDialog_activeSelectionInterfaces_desc,
+                                                     PDERuntimeMessages
+                                                       .get().SpyDialog_activeSelectionInterfaces_desc,
                                                      interfaces ) );
       if( selection instanceof IStructuredSelection ) {
         IStructuredSelection ss = ( IStructuredSelection )selection;
@@ -64,17 +68,20 @@ public class ActiveSelectionSection implements ISpySection {
         if( size == 1 ) {
           clazz = ss.getFirstElement().getClass();
           buffer.append( toolkit.createClassSection( text,
-                                                     PDERuntimeMessages.get().SpyDialog_activeSelectedElement_desc,
+                                                     PDERuntimeMessages
+                                                       .get().SpyDialog_activeSelectedElement_desc,
                                                      new Class[] {
                                                        clazz
-                                                     } ) );
+          } ) );
           interfaces = clazz.getInterfaces();
           buffer.append( toolkit.createInterfaceSection( text,
-                                                         PDERuntimeMessages.get().SpyDialog_activeSelectedElementInterfaces_desc,
+                                                         PDERuntimeMessages
+                                                           .get().SpyDialog_activeSelectedElementInterfaces_desc,
                                                          interfaces ) );
         } else if( size > 1 ) {
-          buffer.append( NLS.bind( PDERuntimeMessages.get().SpyDialog_activeSelectedElementsCount_desc,
-                                   new Integer( size ) ) );
+          buffer
+            .append( NLS.bind( PDERuntimeMessages.get().SpyDialog_activeSelectedElementsCount_desc,
+                               new Integer( size ) ) );
         }
       }
       buffer.append( "</form>" ); //$NON-NLS-1$

@@ -14,6 +14,7 @@
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy;
 
+import java.awt.datatransfer.Clipboard;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.help.IContext;
@@ -24,6 +25,8 @@ import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.pde.internal.runtime.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -31,6 +34,7 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.*;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 
 /**
@@ -71,6 +75,7 @@ public class SpyFormToolkit extends FormToolkit {
       this.image = image;
     }
 
+    @Override
     public void run() {
       FileDialog fileChooser = new FileDialog( PDERuntimePlugin.getActiveWorkbenchShell(), SWT.SAVE );
       // RAP [if] Missing API
@@ -117,6 +122,7 @@ public class SpyFormToolkit extends FormToolkit {
     this.dialog = dialog;
   }
 
+  @Override
   public FormText createFormText( Composite parent, boolean trackFocus ) {
     FormText text = super.createFormText( parent, trackFocus );
 // if (PDERuntimePlugin.HAS_IDE_BUNDLES) {
@@ -150,6 +156,7 @@ public class SpyFormToolkit extends FormToolkit {
 // copyQNameItem.addSelectionListener(listener);
     menu.addMenuListener( new MenuAdapter() {
 
+      @Override
       public void menuShown( MenuEvent e ) {
         String href = ( String )formText.getSelectedLinkHref();
         copyQNameItem.setEnabled( href != null && href.startsWith( CLASS_PROTOCOL_PREFIX ) );
@@ -298,7 +305,7 @@ public class SpyFormToolkit extends FormToolkit {
     }
     ToolBarManager manager = new ToolBarManager( SWT.FLAT );
     ToolBar toolbar = manager.createControl( section );
-    final Cursor handCursor = new Cursor( Display.getCurrent(), SWT.CURSOR_HAND );
+    final Cursor handCursor = Display.getCurrent().getSystemCursor( SWT.CURSOR_HAND );
     toolbar.setCursor( handCursor );
     section.setTextClient( toolbar );
     section.setData( "toolbarmanager", manager ); //$NON-NLS-1$

@@ -22,11 +22,41 @@
       </view>
    </extension>
    <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+         <viewShortcut
+               id="org.eclipse.pde.runtime.LogView">
+         </viewShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.pde.ui.PDEPerspective">
+         <viewShortcut
+               id="org.eclipse.pde.runtime.LogView">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
+   <extension
          point="org.eclipse.ui.bindings">
       <key
             commandId="org.eclipse.ui.views.showView"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M2+M3+Q L">
+         <parameter
+               id="org.eclipse.ui.views.showView.viewId"
+               value="org.eclipse.pde.runtime.LogView">
+         </parameter>
+      </key>
+      <key
+            platform="carbon"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+Q L">
+      </key>
+      <key
+            platform="carbon"
+            commandId="org.eclipse.ui.views.showView"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M3+Q L">
          <parameter
                id="org.eclipse.ui.views.showView.viewId"
                value="org.eclipse.pde.runtime.LogView">
@@ -42,12 +72,5 @@
             name="%content-type.name.log"
             priority="high">
       </content-type>
-   </extension>
-   <extension
-         point="org.eclipse.rap.ui.serviceHandler">
-      <serviceHandler
-            class="org.eclipse.ui.internal.views.log.DownloadServiceHandler"
-            id="org.eclipse.rap.ui.view.log.downloadLogFile">
-      </serviceHandler>
    </extension>
 </plugin>

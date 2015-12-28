@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,14 +8,14 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 202583, 207344
- *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
- *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
+ *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
+import com.ibm.icu.text.SimpleDateFormat;
 import java.io.PrintWriter;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -25,7 +25,7 @@ public class LogSession extends Group {
 
 	/**
 	 * Describes the !SESSION header name
-	 * 
+	 *
 	 * @since 3.5
 	 */
 	public static final String SESSION = "!SESSION"; //$NON-NLS-1$
@@ -33,7 +33,7 @@ public class LogSession extends Group {
 	private Date date;
 
 	public LogSession() {
-		super(null);
+		super(Messages.get().LogViewLabelProvider_Session);
 	}
 
 	public Date getDate() {
@@ -69,13 +69,10 @@ public class LogSession extends Group {
 		}
 	}
 
+	@Override
 	public void write(PrintWriter writer) {
 		writer.write(sessionData);
 		writer.println();
 		super.write(writer);
-	}
-
-	public String toString() {
-		return Messages.get().LogViewLabelProvider_Session;
 	}
 }

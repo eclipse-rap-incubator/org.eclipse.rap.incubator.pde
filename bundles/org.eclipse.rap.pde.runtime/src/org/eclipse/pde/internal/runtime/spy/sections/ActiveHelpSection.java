@@ -1,13 +1,14 @@
 /*******************************************************************************
- *  Copyright (c) 2007, 2008 IBM Corporation and others.
+ *  Copyright (c) 2007, 2015 IBM Corporation and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     Chris Aniszczyk <zx@us.ibm.com> - initial API and implementation
  *     Remy Suen <remy.suen@gmail.com> - bug 203451
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.sections;
 
@@ -17,25 +18,12 @@ import org.eclipse.help.IContextProvider;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.pde.internal.runtime.PDERuntimeMessages;
-import org.eclipse.pde.internal.runtime.PDERuntimePlugin;
-import org.eclipse.pde.internal.runtime.PDERuntimePluginImages;
+import org.eclipse.pde.internal.runtime.*;
 import org.eclipse.pde.internal.runtime.spy.SpyFormToolkit;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
-import org.eclipse.ui.forms.widgets.FormText;
-import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.*;
+import org.eclipse.ui.forms.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
@@ -48,6 +36,7 @@ public class ActiveHelpSection implements ISpySection {
 
   private SpyFormToolkit toolkit;
 
+  @Override
   public void build( ScrolledForm form, SpyFormToolkit toolkit, ExecutionEvent event ) {
     this.toolkit = toolkit;
     final Shell shell = HandlerUtil.getActiveShell( event );
@@ -68,7 +57,7 @@ public class ActiveHelpSection implements ISpySection {
     } else {
       helpBuffer.append( processControlHelp( event, toolkit ) );
     }
-    if( helpBuffer != null && helpBuffer.length() > 0 ) {
+    if( helpBuffer.length() > 0 ) {
       Section section = toolkit.createSection( form.getBody(), ExpandableComposite.TITLE_BAR );
       section.setText( PDERuntimeMessages.get().SpyDialog_activeHelpSection_title );
       section.clientVerticalSpacing = 9;
@@ -150,27 +139,28 @@ public class ActiveHelpSection implements ISpySection {
         processChildren( shell.getChildren()[ i ], buffer );
       }
     } else if( control != null ) {
-// // if we don't have org.eclipse.help, we will have problems when trying to load IContextProvider
-// if (!PDERuntimePlugin.HAS_IDE_BUNDLES)
-// processChildren(control, buffer);
-// else {
-      IContextProvider provider = ( IContextProvider )part.getAdapter( IContextProvider.class );
-      IContext context = ( provider != null )
-                                             ? provider.getContext( control )
-                                             : null;
-      if( context != null ) {
-        buffer.append( toolkit.createHelpIdentifierSection( context ) );
-      } else {
-        buffer.append( toolkit.createHelpIdentifierSection( control ) );
-      }
-      if( control instanceof Composite ) {
-        Composite parent = ( Composite )control;
-        for( int i = 0; i < parent.getChildren().length; i++ ) {
-          processChildren( parent.getChildren()[ i ], buffer );
+      // if we don't have org.eclipse.help, we will have problems when trying to load
+      // IContextProvider
+      if( !PDERuntimePlugin.HAS_IDE_BUNDLES )
+        processChildren( control, buffer );
+      else {
+        IContextProvider provider = ( IContextProvider )part.getAdapter( IContextProvider.class );
+        IContext context = ( provider != null )
+                                                ? provider.getContext( control )
+                                                : null;
+        if( context != null ) {
+          buffer.append( toolkit.createHelpIdentifierSection( context ) );
+        } else {
+          buffer.append( toolkit.createHelpIdentifierSection( control ) );
+        }
+        if( control instanceof Composite ) {
+          Composite parent = ( Composite )control;
+          for( int i = 0; i < parent.getChildren().length; i++ ) {
+            processChildren( parent.getChildren()[ i ], buffer );
+          }
         }
       }
     }
-// }
     return buffer.toString();
   }
 }

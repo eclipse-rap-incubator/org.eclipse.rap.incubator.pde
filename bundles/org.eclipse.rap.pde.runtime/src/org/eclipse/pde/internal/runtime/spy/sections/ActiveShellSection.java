@@ -4,9 +4,10 @@
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *     Chris Aniszczyk <zx@us.ibm.com> - initial API and implementation
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.sections;
 
@@ -14,11 +15,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.pde.internal.runtime.PDERuntimeMessages;
 import org.eclipse.pde.internal.runtime.spy.SpyFormToolkit;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
-import org.eclipse.ui.forms.widgets.FormText;
-import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 
@@ -27,6 +24,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class ActiveShellSection implements ISpySection {
 
+  @Override
   public void build( ScrolledForm form, SpyFormToolkit toolkit, ExecutionEvent event ) {
     final Shell shell = HandlerUtil.getActiveShell( event );
     Object object = shell.getData();
@@ -44,11 +42,10 @@ public class ActiveShellSection implements ISpySection {
     section.setLayoutData( td );
     StringBuffer buffer = new StringBuffer();
     buffer.append( "<form>" ); //$NON-NLS-1$
-    buffer.append( toolkit.createClassSection( text,
-                                               PDERuntimeMessages.get().SpyDialog_activeShell_desc,
-                                               new Class[] {
-                                                 clazz
-                                               } ) );
+    buffer.append( toolkit
+      .createClassSection( text, PDERuntimeMessages.get().SpyDialog_activeShell_desc, new Class[] {
+        clazz
+    } ) );
     buffer.append( "</form>" ); //$NON-NLS-1$
     text.setText( buffer.toString(), true, false );
   }

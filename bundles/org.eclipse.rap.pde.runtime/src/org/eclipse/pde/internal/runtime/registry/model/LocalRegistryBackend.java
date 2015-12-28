@@ -8,6 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Wolfgang Schell <ws@jetztgrad.net> - bug 259348
+ *     Arnaud Mergey <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.registry.model;
 
@@ -28,14 +29,12 @@ public class LocalRegistryBackend
 
   private BackendChangeListener listener;
 
+  @Override
   public void setRegistryListener( BackendChangeListener listener ) {
     this.listener = listener;
   }
 
-  /*
-   * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#connect()
-   */
+  @Override
   public void connect( IProgressMonitor monitor ) {
     if( monitor.isCanceled() )
       return;
@@ -44,10 +43,7 @@ public class LocalRegistryBackend
     PDERuntimePlugin.getDefault().getBundleContext().addServiceListener( this );
   }
 
-  /*
-   * (non-Javadoc)
-   * @see org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#disconnect()
-   */
+  @Override
   public void disconnect() {
     Platform.getExtensionRegistry().removeListener( this );
     PDERuntimePlugin.getDefault().getBundleContext().removeBundleListener( this );
@@ -60,38 +56,24 @@ public class LocalRegistryBackend
     return bundle.equals( ref.getBundle() );
   }
 
-  protected static boolean isServiceInUse( org.osgi.framework.Bundle bundle, ServiceReference ref )
+  protected static boolean isServiceInUse( org.osgi.framework.Bundle bundle,
+                                           ServiceReference ref )
   {
     org.osgi.framework.Bundle[] usingBundles = ref.getUsingBundles();
     return( usingBundles != null && Arrays.asList( usingBundles ).contains( bundle ) );
   }
 
-  /*
-   * (non-Javadoc)
-   * @see
-   * org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#start(org.osgi.framework
-   * .Bundle)
-   */
+  @Override
   public void start( long id ) throws BundleException {
     PDERuntimePlugin.getDefault().getBundleContext().getBundle( id ).start();
   }
 
-  /*
-   * (non-Javadoc)
-   * @see
-   * org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#stop(org.osgi.framework
-   * .Bundle)
-   */
+  @Override
   public void stop( long id ) throws BundleException {
     PDERuntimePlugin.getDefault().getBundleContext().getBundle( id ).stop();
   }
 
-  /*
-   * (non-Javadoc)
-   * @see
-   * org.eclipse.pde.internal.runtime.registry.model.local.RegistryBackend#diagnose(org.osgi.framework
-   * .Bundle)
-   */
+  @Override
   public MultiStatus diagnose( long id ) {
     PlatformAdmin plaformAdmin = PDERuntimePlugin.getDefault().getPlatformAdmin();
     State state = plaformAdmin.getState( false );
@@ -105,9 +87,11 @@ public class LocalRegistryBackend
                                             PDERuntimeMessages.get().RegistryView_found_problems,
                                             null );
     for( int i = 0; i < resolverErrors.length; i++ ) {
-      if( ( resolverErrors[ i ].getType() & ( ResolverError.MISSING_FRAGMENT_HOST
-                                              | ResolverError.MISSING_GENERIC_CAPABILITY
-                                              | ResolverError.MISSING_IMPORT_PACKAGE | ResolverError.MISSING_REQUIRE_BUNDLE ) ) != 0 )
+      if( ( resolverErrors[ i ].getType()
+            & ( ResolverError.MISSING_FRAGMENT_HOST
+                | ResolverError.MISSING_GENERIC_CAPABILITY
+                | ResolverError.MISSING_IMPORT_PACKAGE
+                | ResolverError.MISSING_REQUIRE_BUNDLE ) ) != 0 )
         continue;
       IStatus status = new Status( IStatus.WARNING,
                                    PDERuntimePlugin.ID,
@@ -123,6 +107,7 @@ public class LocalRegistryBackend
     return problems;
   }
 
+  @Override
   public void initializeBundles( IProgressMonitor monitor ) {
     if( monitor.isCanceled() )
       return;
@@ -137,6 +122,7 @@ public class LocalRegistryBackend
     }
   }
 
+  @Override
   public void initializeExtensionPoints( IProgressMonitor monitor ) {
     if( monitor.isCanceled() )
       return;
@@ -150,14 +136,14 @@ public class LocalRegistryBackend
     listener.addExtensionPoints( extPts );
   }
 
+  @Override
   public void initializeServices( IProgressMonitor monitor ) {
     if( monitor.isCanceled() )
       return;
     ServiceReference[] references = null;
     try {
-      references = PDERuntimePlugin.getDefault()
-        .getBundleContext()
-        .getAllServiceReferences( null, null );
+      references = PDERuntimePlugin.getDefault().getBundleContext().getAllServiceReferences( null,
+                                                                                             null );
     } catch( InvalidSyntaxException e ) { // nothing
     }
     if( references == null ) {
@@ -168,7 +154,7 @@ public class LocalRegistryBackend
         return;
       ServiceRegistration service = createServiceReferenceAdapter( references[ i ] );
       // The list of registered services is volatile, avoid adding unregistered services to the
-// listener
+      // listener
       if( service.getBundle() != null ) {
         listener.addService( service );
       }
@@ -252,8 +238,8 @@ public class LocalRegistryBackend
       .getState( false )
       .getBundle( name, null );
     return descr == null
-                        ? null
-                        : new Long( descr.getBundleId() );
+                         ? null
+                         : new Long( descr.getBundleId() );
   }
 
   private ExtensionPoint createExtensionPointAdapter( IExtensionPoint extensionPoint ) {
@@ -270,13 +256,14 @@ public class LocalRegistryBackend
   /**
    * Returns a new {@link ServiceRegistration} for the given service reference. If the service being
    * referenced is unregistered, the returned service registration will not have a bundle set.
-   * 
+   *
    * @param ref the service reference to get the registration for
    * @return a new service registration containing information from the service reference
    */
   private ServiceRegistration createServiceReferenceAdapter( ServiceReference ref ) {
     ServiceRegistration service = new ServiceRegistration();
-    service.setId( ( ( Long )ref.getProperty( org.osgi.framework.Constants.SERVICE_ID ) ).longValue() );
+    service
+      .setId( ( ( Long )ref.getProperty( org.osgi.framework.Constants.SERVICE_ID ) ).longValue() );
     org.osgi.framework.Bundle bundle = ref.getBundle();
     if( bundle != null ) {
       service.setBundle( bundle.getSymbolicName() );
@@ -403,8 +390,8 @@ public class LocalRegistryBackend
     if( label == null && config.getAttribute( "id" ) != null ) { //$NON-NLS-1$
       String[] labelSplit = config.getAttribute( "id" ).split( "\\." ); //$NON-NLS-1$ //$NON-NLS-2$
       label = labelSplit.length == 0
-                                    ? null
-                                    : labelSplit[ labelSplit.length - 1 ];
+                                     ? null
+                                     : labelSplit[ labelSplit.length - 1 ];
     }
     return label;
   }
@@ -417,6 +404,7 @@ public class LocalRegistryBackend
     return extensionAdapters;
   }
 
+  @Override
   public void bundleChanged( BundleEvent event ) {
     Bundle adapter = createBundleAdapter( event.getBundle() );
     switch( event.getType() ) {
@@ -452,6 +440,7 @@ public class LocalRegistryBackend
     }
   }
 
+  @Override
   public void serviceChanged( ServiceEvent event ) {
     ServiceReference ref = event.getServiceReference();
     ServiceRegistration adapter = createServiceReferenceAdapter( ref );
@@ -477,22 +466,27 @@ public class LocalRegistryBackend
     return result;
   }
 
+  @Override
   public void added( IExtension[] extensions ) {
     listener.addExtensions( createExtensionAdapters( extensions ) );
   }
 
+  @Override
   public void removed( IExtension[] extensions ) {
     listener.removeExtensions( createExtensionAdapters( extensions ) );
   }
 
+  @Override
   public void added( IExtensionPoint[] extensionPoints ) {
     listener.addExtensionPoints( createExtensionPointAdapters( extensionPoints ) );
   }
 
+  @Override
   public void removed( IExtensionPoint[] extensionPoints ) {
     listener.removeExtensionPoints( createExtensionPointAdapters( extensionPoints ) );
   }
 
+  @Override
   public void setEnabled( long id, boolean enabled ) {
     State state = PDERuntimePlugin.getDefault().getState();
     BundleDescription desc = state.getBundle( id );

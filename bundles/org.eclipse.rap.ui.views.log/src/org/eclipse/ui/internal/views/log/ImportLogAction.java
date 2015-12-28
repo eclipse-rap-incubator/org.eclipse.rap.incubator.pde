@@ -8,6 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218293
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
@@ -52,10 +53,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 			logView.handleImportPath(location);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.jface.action.Action#run()
-		 */
+		@Override
 		public void run() {
 			doRun();
 
@@ -65,10 +63,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 			}
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
+		@Override
 		public boolean equals(Object o) {
 			if (o instanceof ImportConfigurationLogAction) {
 				ImportConfigurationLogAction action = (ImportConfigurationLogAction) o;
@@ -86,19 +81,13 @@ public class ImportLogAction extends Action implements IMenuCreator {
 		setMenuCreator(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.action.Action#run()
-	 */
+	@Override
 	public void run() {
 		// by default import file selected by user
 		logView.handleImport();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.action.IMenuCreator#getMenu(org.eclipse.swt.widgets.Control)
-	 */
+	@Override
 	public Menu getMenu(Control parent) {
 		if (menuUpdateNeeded(toolbarMenu)) {
 			toolbarMenu = new Menu(parent);
@@ -107,10 +96,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 		return toolbarMenu;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.action.IMenuCreator#getMenu(org.eclipse.swt.widgets.Menu)
-	 */
+	@Override
 	public Menu getMenu(Menu parent) {
 		if (menuUpdateNeeded(popupMenu)) {
 			popupMenu = new Menu(parent);
@@ -121,7 +107,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 
 	/**
 	 * Returns whether menu should be updated or not. Menu should be updated
-	 * if either number of actions or any of actions has been changed. 
+	 * if either number of actions or any of actions has been changed.
 	 * @return true if menu should be updated, false otherwise
 	 */
 	private boolean menuUpdateNeeded(Menu menu) {
@@ -178,7 +164,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 
 	/**
 	 * Builds menu of ImportLogAction actions from log files provided by LogFilesManager.
-	 * 
+	 *
 	 * @see IMenuCreator#getMenu(Control)
 	 */
 	private void createMenuItems(Menu menu) {
@@ -201,6 +187,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 		(new Separator()).fill(menu, -1);
 		ImportConfigurationLogAction importWorkspaceLogAction = new ImportConfigurationLogAction(Messages.get().ImportLogAction_reloadWorkspaceLog, Platform.getLogFileLocation().toFile().getAbsolutePath()) {
 
+			@Override
 			public void doRun() {
 				logView.setPlatformLog();
 			}
@@ -211,10 +198,7 @@ public class ImportLogAction extends Action implements IMenuCreator {
 		item.fill(menu, -1);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.jface.action.IMenuCreator#dispose()
-	 */
+	@Override
 	public void dispose() {
 		if (toolbarMenu != null) {
 			toolbarMenu.dispose();

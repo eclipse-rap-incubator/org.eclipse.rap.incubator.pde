@@ -11,34 +11,35 @@
 package org.eclipse.pde.internal.runtime.registry.model;
 
 public class Attribute extends ModelObject {
+	public static final String F_LOCATION = "Location"; //$NON-NLS-1$
 
-  public static final String F_LOCATION = "Location"; //$NON-NLS-1$
-  public static final String F_BUNDLE = "Bundle"; //$NON-NLS-1$
-  private String name;
-  private String value;
+	public static final String F_BUNDLE = "Bundle"; //$NON-NLS-1$
 
-  public Attribute() {
-    // empty
-  }
+	private String name;
+	private String value;
 
-  public Attribute( String name, String value ) {
-    this.name = name;
-    this.value = value;
-  }
+	public Attribute() {
+		// empty
+	}
 
-  public String getValue() {
-    return value;
-  }
+	public Attribute(String name, String value) {
+		this.name = name;
+		this.value = value;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getValue() {
+		return value;
+	}
 
-  public void setName( String name ) {
-    this.name = name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public void setValue( String value ) {
-    this.value = value;
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
 }

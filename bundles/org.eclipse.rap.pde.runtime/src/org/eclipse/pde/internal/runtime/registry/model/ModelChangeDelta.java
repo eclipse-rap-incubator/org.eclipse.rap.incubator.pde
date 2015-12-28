@@ -15,28 +15,29 @@ package org.eclipse.pde.internal.runtime.registry.model;
  */
 public class ModelChangeDelta {
 
-  public static final int ADDED = 0;
-  public static final int UPDATED = 1;
-  public static final int REMOVED = 2;
-  public static final int STARTING = 3;
-  public static final int STARTED = 4;
-  public static final int STOPPING = 5;
-  public static final int STOPPED = 6;
-  public static final int RESOLVED = 7;
-  public static final int UNRESOLVED = 8;
-  private ModelObject fObject;
-  private int fFlag;
+	public static final int ADDED = 0;
+	public static final int UPDATED = 1;
+	public static final int REMOVED = 2;
+	public static final int STARTING = 3;
+	public static final int STARTED = 4;
+	public static final int STOPPING = 5;
+	public static final int STOPPED = 6;
+	public static final int RESOLVED = 7;
+	public static final int UNRESOLVED = 8;
 
-  public ModelChangeDelta( ModelObject object, int flag ) {
-    fObject = object;
-    fFlag = flag;
-  }
+	private ModelObject fObject;
+	private int fFlag;
 
-  public ModelObject getModelObject() {
-    return fObject;
-  }
+	public ModelChangeDelta(ModelObject object, int flag) {
+		fObject = object;
+		fFlag = flag;
+	}
 
-  public int getFlag() {
-    return fFlag;
-  }
+	public ModelObject getModelObject() {
+		return fObject;
+	}
+
+	public int getFlag() {
+		return fFlag;
+	}
 }

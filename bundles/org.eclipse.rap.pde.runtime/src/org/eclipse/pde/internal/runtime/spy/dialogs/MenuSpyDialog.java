@@ -7,25 +7,19 @@
  *
  * Contributors:
  *     EclipseSource - initial API and implementation
+ *     Arnaud Mergey - <a_mergey@yahoo.fr>
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy.dialogs;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.pde.internal.runtime.IHelpContextIds;
-import org.eclipse.pde.internal.runtime.PDERuntimeMessages;
-import org.eclipse.pde.internal.runtime.PDERuntimePluginImages;
+import org.eclipse.pde.internal.runtime.*;
 import org.eclipse.pde.internal.runtime.spy.SpyFormToolkit;
 import org.eclipse.pde.internal.runtime.spy.sections.ActiveMenuSection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
@@ -44,16 +38,19 @@ public class MenuSpyDialog extends PopupDialog {
 
   private class CloseAction extends Action {
 
+    @Override
     public ImageDescriptor getImageDescriptor() {
       return PlatformUI.getWorkbench()
         .getSharedImages()
         .getImageDescriptor( ISharedImages.IMG_TOOL_DELETE );
     }
 
+    @Override
     public String getToolTipText() {
       return PDERuntimeMessages.get().SpyDialog_close;
     }
 
+    @Override
     public void run() {
       close();
     }
@@ -69,17 +66,20 @@ public class MenuSpyDialog extends PopupDialog {
   /*
    * @see org.eclipse.jface.window.Window#configureShell(Shell)
    */
+  @Override
   protected void configureShell( Shell shell ) {
     super.configureShell( shell );
     PlatformUI.getWorkbench().getHelpSystem().setHelp( shell, IHelpContextIds.SPY_DIALOG );
   }
 
+  @Override
   protected Control createContents( Composite parent ) {
     getShell().setBackground( getShell().getDisplay().getSystemColor( SWT.COLOR_DARK_GRAY ) );
     initializeBounds();
     return createDialogArea( parent );
   }
 
+  @Override
   protected Control createDialogArea( Composite parent ) {
     this.composite = ( Composite )super.createDialogArea( parent );
     ScrolledForm form = toolkit.createScrolledForm( composite );
@@ -104,6 +104,7 @@ public class MenuSpyDialog extends PopupDialog {
     return composite;
   }
 
+  @Override
   protected Point getInitialLocation( Point size ) {
     if( fAnchor == null ) {
       return super.getInitialLocation( size );
@@ -119,6 +120,7 @@ public class MenuSpyDialog extends PopupDialog {
     return point;
   }
 
+  @Override
   public boolean close() {
     if( toolkit != null )
       toolkit.dispose();
@@ -126,6 +128,7 @@ public class MenuSpyDialog extends PopupDialog {
     return super.close();
   }
 
+  @Override
   protected Control getFocusControl() {
     return this.composite;
   }

@@ -14,221 +14,231 @@ import java.util.*;
 import org.eclipse.core.runtime.MultiStatus;
 import org.osgi.framework.BundleException;
 
-
 public class Bundle extends ModelObject {
 
-  public static final int ACTIVE = org.osgi.framework.Bundle.ACTIVE;
-  public static final int UNINSTALLED = org.osgi.framework.Bundle.UNINSTALLED;
-  public static final int INSTALLED = org.osgi.framework.Bundle.INSTALLED;
-  private String symbolicName;
-  private String location;
-  private boolean isEnabled;
-  private BundlePrerequisite[] imports = new BundlePrerequisite[ 0 ];
-  private String version;
-  private int state;
-  private long id;
-  private BundleLibrary[] libraries = new BundleLibrary[ 0 ];
-  private BundlePrerequisite[] importedPackages = new BundlePrerequisite[ 0 ];
-  private BundlePrerequisite[] exportedPackages = new BundlePrerequisite[ 0 ];
-  private String fragmentHost;
-  private String fragmentHostVersion;
+	public static final int ACTIVE = org.osgi.framework.Bundle.ACTIVE;
+	public static final int UNINSTALLED = org.osgi.framework.Bundle.UNINSTALLED;
+	public static final int INSTALLED = org.osgi.framework.Bundle.INSTALLED;
 
-  public void setFragmentHost( String fragmentHost ) {
-    this.fragmentHost = fragmentHost;
-  }
+	private String symbolicName;
+	private String location;
+	private boolean isEnabled;
+	private BundlePrerequisite[] imports = new BundlePrerequisite[0];
+	private String version;
+	private int state;
+	private long id;
+	private BundleLibrary[] libraries = new BundleLibrary[0];
+	private BundlePrerequisite[] importedPackages = new BundlePrerequisite[0];
+	private BundlePrerequisite[] exportedPackages = new BundlePrerequisite[0];
 
-  public String getFragmentHost() {
-    return fragmentHost;
-  }
+	private String fragmentHost;
+	private String fragmentHostVersion;
 
-  public String getFragmentHostVersion() {
-    return fragmentHostVersion;
-  }
+	public void setFragmentHost(String fragmentHost) {
+		this.fragmentHost = fragmentHost;
+	}
 
-  public void setFragmentHostVersion( String fragmentHostVersion ) {
-    this.fragmentHostVersion = fragmentHostVersion;
-  }
+	public String getFragmentHost() {
+		return fragmentHost;
+	}
 
-  public void setSymbolicName( String symbolicName ) {
-    this.symbolicName = symbolicName;
-  }
+	public String getFragmentHostVersion() {
+		return fragmentHostVersion;
+	}
 
-  public void setLocation( String location ) {
-    this.location = location;
-  }
+	public void setFragmentHostVersion(String fragmentHostVersion) {
+		this.fragmentHostVersion = fragmentHostVersion;
+	}
 
-  public void setImports( BundlePrerequisite[] imports ) {
-    if( imports == null )
-      throw new IllegalArgumentException();
-    this.imports = imports;
-  }
+	public void setSymbolicName(String symbolicName) {
+		this.symbolicName = symbolicName;
+	}
 
-  public void setVersion( String version ) {
-    this.version = version;
-  }
+	public void setLocation(String location) {
+		this.location = location;
+	}
 
-  public void setState( int state ) {
-    this.state = state;
-  }
+	public void setImports(BundlePrerequisite[] imports) {
+		if (imports == null)
+			throw new IllegalArgumentException();
 
-  public void setId( long id ) {
-    this.id = id;
-  }
+		this.imports = imports;
+	}
 
-  public void setEnabled( boolean enabled ) {
-    isEnabled = enabled;
-  }
+	public void setVersion(String version) {
+		this.version = version;
+	}
 
-  public void setLibraries( BundleLibrary[] libraries ) {
-    if( libraries == null )
-      throw new IllegalArgumentException();
-    this.libraries = libraries;
-  }
+	public void setState(int state) {
+		this.state = state;
+	}
 
-  public String getSymbolicName() {
-    return symbolicName;
-  }
+	public void setId(long id) {
+		this.id = id;
+	}
 
-  public boolean isEnabled() {
-    return isEnabled;
-  }
+	public void setEnabled(boolean enabled) {
+		isEnabled = enabled;
+	}
 
-  public BundlePrerequisite[] getImports() {
-    return imports;
-  }
+	public void setLibraries(BundleLibrary[] libraries) {
+		if (libraries == null)
+			throw new IllegalArgumentException();
 
-  public BundleLibrary[] getLibraries() {
-    return libraries;
-  }
+		this.libraries = libraries;
+	}
 
-  public String getLocation() {
-    return location;
-  }
+	public String getSymbolicName() {
+		return symbolicName;
+	}
 
-  public String getVersion() {
-    return version;
-  }
+	public boolean isEnabled() {
+		return isEnabled;
+	}
 
-  public int getState() {
-    return state;
-  }
+	public BundlePrerequisite[] getImports() {
+		return imports;
+	}
 
-  public long getId() {
-    return id;
-  }
+	public BundleLibrary[] getLibraries() {
+		return libraries;
+	}
 
-  public void start() throws BundleException {
-    if( model == null )
-      return;
-    model.backend.start( id );
-  }
+	public String getLocation() {
+		return location;
+	}
 
-  public void stop() throws BundleException {
-    if( model == null )
-      return;
-    model.backend.stop( id );
-  }
+	public String getVersion() {
+		return version;
+	}
 
-  public void enable() {
-    if( model == null )
-      return;
-    model.backend.setEnabled( id, true );
-  }
+	public int getState() {
+		return state;
+	}
 
-  public void disable() {
-    if( model == null )
-      return;
-    model.backend.setEnabled( id, false );
-  }
+	public long getId() {
+		return id;
+	}
 
-  public MultiStatus diagnose() {
-    if( model == null )
-      return null;
-    return model.backend.diagnose( id );
-  }
+	public void start() throws BundleException {
+		if (model == null)
+			return;
+		model.backend.start(id);
+	}
 
-  public ExtensionPoint[] getExtensionPoints() {
-    if( model == null )
-      return new ExtensionPoint[ 0 ];
-    ExtensionPoint[] extPoints = model.getExtensionPoints();
-    List result = new ArrayList();
-    for( int i = 0; i < extPoints.length; i++ ) {
-      if( extPoints[ i ].getContributorId().longValue() == id )
-        result.add( extPoints[ i ] );
-    }
-    return ( ExtensionPoint[] )result.toArray( new ExtensionPoint[ result.size() ] );
-  }
+	public void stop() throws BundleException {
+		if (model == null)
+			return;
+		model.backend.stop(id);
+	}
 
-  public Extension[] getExtensions() {
-    if( model == null )
-      return new Extension[ 0 ];
-    ExtensionPoint[] extPoints = model.getExtensionPoints();
-    List result = new ArrayList();
-    for( int i = 0; i < extPoints.length; i++ ) {
-      for( Iterator it = extPoints[ i ].getExtensions().iterator(); it.hasNext(); ) {
-        Extension a = ( Extension )it.next();
-        if( a.getContributorId().longValue() == id )
-          result.add( a );
-      }
-    }
-    return ( Extension[] )result.toArray( new Extension[ result.size() ] );
-  }
+	public void enable() {
+		if (model == null)
+			return;
+		model.backend.setEnabled(id, true);
+	}
 
-  public ServiceRegistration[] getRegisteredServices() {
-    if( model == null )
-      return new ServiceRegistration[ 0 ];
-    ServiceRegistration[] services = model.getServices();
-    List result = new ArrayList();
-    for( int i = 0; i < services.length; i++ ) {
-      if( symbolicName.equals( services[ i ].getBundle() ) )
-        result.add( services[ i ] );
-    }
-    return ( ServiceRegistration[] )result.toArray( new ServiceRegistration[ result.size() ] );
-  }
+	public void disable() {
+		if (model == null)
+			return;
+		model.backend.setEnabled(id, false);
+	}
 
-  public ServiceRegistration[] getServicesInUse() {
-    if( model == null )
-      return new ServiceRegistration[ 0 ];
-    ServiceRegistration[] services = model.getServices();
-    List result = new ArrayList();
-    for( int i = 0; i < services.length; i++ ) {
-      long[] usingBundles = services[ i ].getUsingBundleIds();
-      if( usingBundles != null ) {
-        for( int j = 0; j < usingBundles.length; j++ )
-          if( id == usingBundles[ j ] )
-            result.add( services[ i ] );
-      }
-    }
-    return ( ServiceRegistration[] )result.toArray( new ServiceRegistration[ result.size() ] );
-  }
+	public MultiStatus diagnose() {
+		if (model == null)
+			return null;
+		return model.backend.diagnose(id);
+	}
 
-  public boolean equals( Object obj ) {
-    return ( obj instanceof Bundle ) && ( id == ( ( Bundle )obj ).id );
-  }
+	public ExtensionPoint[] getExtensionPoints() {
+		if (model == null)
+			return new ExtensionPoint[0];
+		ExtensionPoint[] extPoints = model.getExtensionPoints();
+		List result = new ArrayList();
 
-  public int hashCode() {
-    return ( int )id;
-  }
+		for (int i = 0; i < extPoints.length; i++) {
+			if (extPoints[i].getContributorId().longValue() == id)
+				result.add(extPoints[i]);
+		}
+		return (ExtensionPoint[]) result.toArray(new ExtensionPoint[result.size()]);
+	}
 
-  public Bundle[] getFragments() {
-    if( model == null )
-      return new Bundle[ 0 ];
-    return model.getFragments( this );
-  }
+	public Extension[] getExtensions() {
+		if (model == null)
+			return new Extension[0];
+		ExtensionPoint[] extPoints = model.getExtensionPoints();
+		List result = new ArrayList();
 
-  public void setImportedPackages( BundlePrerequisite[] importedPackages ) {
-    this.importedPackages = importedPackages;
-  }
+		for (int i = 0; i < extPoints.length; i++) {
+			for (Iterator it = extPoints[i].getExtensions().iterator(); it.hasNext();) {
+				Extension a = (Extension) it.next();
+				if (a.getContributorId().longValue() == id)
+					result.add(a);
+			}
 
-  public BundlePrerequisite[] getImportedPackages() {
-    return importedPackages;
-  }
+		}
+		return (Extension[]) result.toArray(new Extension[result.size()]);
+	}
 
-  public void setExportedPackages( BundlePrerequisite[] exportedPackages ) {
-    this.exportedPackages = exportedPackages;
-  }
+	public ServiceRegistration[] getRegisteredServices() {
+		if (model == null)
+			return new ServiceRegistration[0];
+		ServiceRegistration[] services = model.getServices();
+		List result = new ArrayList();
 
-  public BundlePrerequisite[] getExportedPackages() {
-    return exportedPackages;
-  }
+		for (int i = 0; i < services.length; i++) {
+			if (symbolicName.equals(services[i].getBundle()))
+				result.add(services[i]);
+		}
+		return (ServiceRegistration[]) result.toArray(new ServiceRegistration[result.size()]);
+	}
+
+	public ServiceRegistration[] getServicesInUse() {
+		if (model == null)
+			return new ServiceRegistration[0];
+		ServiceRegistration[] services = model.getServices();
+		List result = new ArrayList();
+
+		for (int i = 0; i < services.length; i++) {
+			long[] usingBundles = services[i].getUsingBundleIds();
+			if (usingBundles != null) {
+				for (int j = 0; j < usingBundles.length; j++)
+					if (id == usingBundles[j])
+						result.add(services[i]);
+			}
+		}
+		return (ServiceRegistration[]) result.toArray(new ServiceRegistration[result.size()]);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof Bundle) && (id == ((Bundle) obj).id);
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) id;
+	}
+
+	public Bundle[] getFragments() {
+		if (model == null)
+			return new Bundle[0];
+		return model.getFragments(this);
+	}
+
+	public void setImportedPackages(BundlePrerequisite[] importedPackages) {
+		this.importedPackages = importedPackages;
+	}
+
+	public BundlePrerequisite[] getImportedPackages() {
+		return importedPackages;
+	}
+
+	public void setExportedPackages(BundlePrerequisite[] exportedPackages) {
+		this.exportedPackages = exportedPackages;
+	}
+
+	public BundlePrerequisite[] getExportedPackages() {
+		return exportedPackages;
+	}
 }

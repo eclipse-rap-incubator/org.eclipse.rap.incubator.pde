@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 209474, 207344
- *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
+ *     Eike Stepper <stepper@esc-net.de>              - bug 429372
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
@@ -181,16 +181,12 @@ public class LogEntry extends AbstractEntry {
 		return "?"; //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 		return getSeverityText();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.internal.views.log.AbstractEntry#getLabel(java.lang.Object)
-	 */
+	@Override
 	public String getLabel(Object obj) {
 		return getSeverityText();
 	}
@@ -251,7 +247,7 @@ public class LogEntry extends AbstractEntry {
 	 * Adds the given token to the given buffer, adding a space as needed
 	 * @param buffer
 	 * @param token
-	 * 
+	 *
 	 * @since 3.6
 	 */
 	void appendToken(StringBuffer buffer, String token) {
@@ -319,7 +315,7 @@ public class LogEntry extends AbstractEntry {
 	}
 
 	/**
-	 * Sets the stack to the given stack value. 
+	 * Sets the stack to the given stack value.
 	 * No validation is performed on the new value.
 	 * @param stack
 	 */
@@ -347,8 +343,8 @@ public class LogEntry extends AbstractEntry {
 		fDate = new Date();
 		fDateString = LOCAL_SDF.format(fDate);
 		message = status.getMessage();
-		Throwable throwable = status.getException();
 		this.session = session;
+		Throwable throwable = status.getException();
 		if (throwable != null) {
 			StringWriter swriter = new StringWriter();
 			PrintWriter pwriter = new PrintWriter(swriter);
@@ -365,13 +361,12 @@ public class LogEntry extends AbstractEntry {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.internal.views.log.AbstractEntry#write(java.io.PrintWriter)
-	 */
+	@Override
 	public void write(PrintWriter writer) {
 		if (session != null) {
 			writer.println(session.getSessionData());
 		}
+		writer.println(pluginId);
 		writer.println(getSeverityText());
 		if (fDate != null) {
 			writer.println(getDate());

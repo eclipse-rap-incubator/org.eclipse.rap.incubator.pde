@@ -60,7 +60,7 @@ public class LogView extends ViewPart implements ILogListener {
 	public static final String P_LOG_INFO = "info"; //$NON-NLS-1$
 	public static final String P_LOG_OK = "ok"; //$NON-NLS-1$
 
-	/** 
+	/**
 	 * Maximum tail size of the log file in Mega Bytes (1024 * 1024 Bytes) considers the last XYZ MB of the log file to create log entries.
 	 * This value should be increased if the size of the sub elements of the last (most recent) log entry in the log file exceeds the maximum tail size. 
 	 **/
@@ -152,6 +152,7 @@ public class LogView extends ViewPart implements ILogListener {
 			}
 		}
 
+		@Override
 		public void run() {
 			if (fMemento.getInteger(LogView.P_GROUP_BY).intValue() != groupBy) {
 				fMemento.putInteger(LogView.P_GROUP_BY, groupBy);
@@ -198,6 +199,7 @@ public class LogView extends ViewPart implements ILogListener {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(fFilteredTree, IHelpContextIds.LOG_VIEW);
 		getSite().getWorkbenchWindow().addPerspectiveListener(new IPerspectiveListener2() {
 
+			@Override
 			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, IWorkbenchPartReference partRef, String changeId) {
 				if (!(partRef instanceof IViewReference))
 					return;
@@ -224,6 +226,7 @@ public class LogView extends ViewPart implements ILogListener {
 				// empty
 			}
 
+			@Override
 			public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
 				// empty
 			}
@@ -282,6 +285,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 		MenuManager popupMenuManager = new MenuManager("#PopupMenu"); //$NON-NLS-1$
 		IMenuListener listener = new IMenuListener() {
+			@Override
 			public void menuAboutToShow(IMenuManager manager) {
 //				manager.add(fCopyAction);
 //				manager.add(new Separator());
@@ -324,6 +328,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createClearAction() {
 		Action action = new Action(Messages.get().LogView_clear) {
+			@Override
 			public void run() {
 				handleClear();
 			}
@@ -508,6 +513,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private void createViewer(Composite parent) {
 		PatternFilter filter = new PatternFilter() {
+			@Override
 			protected boolean isLeafMatch(Viewer viewer, Object element) {
 				if (element instanceof LogEntry) {
 					LogEntry logEntry = (LogEntry) element;
@@ -539,6 +545,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fFilteredTree.getViewer().setLabelProvider(fLabelProvider = new LogViewLabelProvider(this));
 		fLabelProvider.connect(this);
 		fFilteredTree.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
 			public void selectionChanged(SelectionChangedEvent e) {
 				handleSelectionChanged(e.getSelection());
 				if (fPropertiesAction.isEnabled())
@@ -561,6 +568,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fColumn1.setText(Messages.get().LogView_column_message);
 		fColumn1.setWidth(fMemento.getInteger(P_COLUMN_1).intValue());
 		fColumn1.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				MESSAGE_ORDER *= -1;
 				ViewerComparator comparator = getViewerComparator(MESSAGE);
@@ -579,6 +587,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fColumn2.setText(Messages.get().LogView_column_plugin);
 		fColumn2.setWidth(fMemento.getInteger(P_COLUMN_2).intValue());
 		fColumn2.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				PLUGIN_ORDER *= -1;
 				ViewerComparator comparator = getViewerComparator(PLUGIN);
@@ -597,6 +606,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fColumn3.setText(Messages.get().LogView_column_date);
 		fColumn3.setWidth(fMemento.getInteger(P_COLUMN_3).intValue());
 		fColumn3.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				DATE_ORDER *= -1;
 				ViewerComparator comparator = getViewerComparator(DATE);
@@ -678,6 +688,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fInputFile = path;
 //		fDirectory = fInputFile.getParent();
 		IRunnableWithProgress op = new IRunnableWithProgress() {
+			@Override
 			public void run(IProgressMonitor monitor) {
 				monitor.beginTask(Messages.get().LogView_operation_importing, IProgressMonitor.UNKNOWN);
 				readLogFile();

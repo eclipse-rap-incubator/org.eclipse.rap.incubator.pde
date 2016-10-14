@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2014 IBM Corporation and others.
+ * Copyright (c) 2000, 2016 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,12 +9,15 @@
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 209474, 207344
  *     Eike Stepper <stepper@esc-net.de>              - bug 429372
+ *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 485843
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
+import com.ibm.icu.text.DateFormat;
+import com.ibm.icu.text.SimpleDateFormat;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.*;
+import java.text.ParseException;
 import java.util.*;
 import org.eclipse.core.runtime.IStatus;
 
@@ -25,8 +28,8 @@ public class LogEntry extends AbstractEntry {
 
 	public static final String SPACE = " "; //$NON-NLS-1$
 	public static final String F_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"; //$NON-NLS-1$
-	private final DateFormat GREGORIAN_SDF = new SimpleDateFormat(F_DATE_FORMAT, Locale.ENGLISH);
-	private final DateFormat LOCAL_SDF = new SimpleDateFormat(F_DATE_FORMAT);
+	private static final DateFormat GREGORIAN_SDF = new SimpleDateFormat(F_DATE_FORMAT, Locale.ENGLISH);
+	private static final DateFormat LOCAL_SDF = new SimpleDateFormat(F_DATE_FORMAT);
 
 	private String pluginId;
 	private int severity;
@@ -166,16 +169,16 @@ public class LogEntry extends AbstractEntry {
 	public String getSeverityText() {
 		switch (severity) {
 			case IStatus.ERROR : {
-				return Messages.get().LogView_severity_error;
+			return Messages.get().LogView_severity_error;
 			}
 			case IStatus.WARNING : {
-				return Messages.get().LogView_severity_warning;
+			return Messages.get().LogView_severity_warning;
 			}
 			case IStatus.INFO : {
-				return Messages.get().LogView_severity_info;
+			return Messages.get().LogView_severity_info;
 			}
 			case IStatus.OK : {
-				return Messages.get().LogView_severity_ok;
+			return Messages.get().LogView_severity_ok;
 			}
 		}
 		return "?"; //$NON-NLS-1$
@@ -355,8 +358,8 @@ public class LogEntry extends AbstractEntry {
 		}
 		IStatus[] schildren = status.getChildren();
 		if (schildren.length > 0) {
-			for (int i = 0; i < schildren.length; i++) {
-				addChild(new LogEntry(schildren[i], session));
+			for (IStatus element : schildren) {
+				addChild(new LogEntry(element, session));
 			}
 		}
 	}

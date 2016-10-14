@@ -14,9 +14,6 @@
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.spy;
 
-import java.awt.datatransfer.Clipboard;
-import java.util.HashMap;
-import java.util.Map;
 import org.eclipse.help.IContext;
 import org.eclipse.help.internal.context.Context;
 import org.eclipse.jface.action.Action;
@@ -25,16 +22,10 @@ import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.pde.internal.runtime.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.forms.events.HyperlinkAdapter;
-import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.*;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 
 
 /**
@@ -42,31 +33,33 @@ import org.osgi.framework.FrameworkUtil;
  */
 public class SpyFormToolkit extends FormToolkit {
 
-  private static final String CLASS_PROTOCOL_PREFIX = "class://"; //$NON-NLS-1$
-  private static final String BUNDLE_PROTOCOL_PREFIX = "bundle://"; //$NON-NLS-1$
+	// private static final String CLASS_PROTOCOL_PREFIX = "class://";
+	// //$NON-NLS-1$
+	// private static final String BUNDLE_PROTOCOL_PREFIX = "bundle://";
+	// //$NON-NLS-1$
 
-  private class SpyHyperlinkAdapter extends HyperlinkAdapter {
-
-    private PopupDialog fDialog;
-
-    public SpyHyperlinkAdapter( PopupDialog dialog ) {
-      this.fDialog = dialog;
-    }
-
-    public void linkActivated( HyperlinkEvent e ) {
-      String href = ( String )e.getHref();
-      if( href.startsWith( CLASS_PROTOCOL_PREFIX ) ) {
-        String clazz = href.substring( CLASS_PROTOCOL_PREFIX.length() );
-        Bundle bundle = ( Bundle )bundleClassByName.get( clazz );
-// SpyIDEUtil.openClass(bundle.getSymbolicName(), clazz);
-        fDialog.close();
-      } else if( href.startsWith( BUNDLE_PROTOCOL_PREFIX ) ) {
-        String bundle = href.substring( BUNDLE_PROTOCOL_PREFIX.length() );
-// / SpyIDEUtil.openBundleManifest(bundle);
-        fDialog.close();
-      }
-    }
-  }
+	// private class SpyHyperlinkAdapter extends HyperlinkAdapter {
+	//
+	// private PopupDialog fDialog;
+	//
+	// public SpyHyperlinkAdapter(PopupDialog dialog) {
+	// this.fDialog = dialog;
+	// }
+	//
+	// public void linkActivated(HyperlinkEvent e) {
+	// String href = (String) e.getHref();
+	// if (href.startsWith(CLASS_PROTOCOL_PREFIX)) {
+	// String clazz = href.substring(CLASS_PROTOCOL_PREFIX.length());
+	// Bundle bundle = (Bundle) bundleClassByName.get(clazz);
+	// // SpyIDEUtil.openClass(bundle.getSymbolicName(), clazz);
+	// fDialog.close();
+	// } else if (href.startsWith(BUNDLE_PROTOCOL_PREFIX)) {
+	// String bundle = href.substring(BUNDLE_PROTOCOL_PREFIX.length());
+	// // / SpyIDEUtil.openBundleManifest(bundle);
+	// fDialog.close();
+	// }
+	// }
+	// }
   private class SaveImageAction extends Action {
 
     private Image image;
@@ -113,13 +106,13 @@ public class SpyFormToolkit extends FormToolkit {
     }
   }
 
-  private Map bundleClassByName = new HashMap();
-  private PopupDialog dialog;
+	// private Map bundleClassByName = new HashMap();
+	// private PopupDialog dialog;
   private static String HELP_KEY = "org.eclipse.ui.help"; //$NON-NLS-1$
 
   public SpyFormToolkit( PopupDialog dialog ) {
     super( Display.getDefault() );
-    this.dialog = dialog;
+		// this.dialog = dialog;
   }
 
   @Override
@@ -132,11 +125,13 @@ public class SpyFormToolkit extends FormToolkit {
     return text;
   }
 
-  private void addCopyQNameMenuItem( final FormText formText ) {
-    Menu menu = formText.getMenu();
-    final MenuItem copyQNameItem = new MenuItem( menu, SWT.PUSH );
-    copyQNameItem.setImage( PDERuntimePluginImages.get( PDERuntimePluginImages.IMG_COPY_QNAME ) );
-    copyQNameItem.setText( PDERuntimeMessages.get().SpyFormToolkit_copyQualifiedName );
+	// private void addCopyQNameMenuItem( final FormText formText ) {
+	// Menu menu = formText.getMenu();
+	// final MenuItem copyQNameItem = new MenuItem( menu, SWT.PUSH );
+	// copyQNameItem.setImage( PDERuntimePluginImages.get(
+	// PDERuntimePluginImages.IMG_COPY_QNAME ) );
+	// copyQNameItem.setText(
+	// PDERuntimeMessages.get().SpyFormToolkit_copyQualifiedName );
 // SelectionListener listener = new SelectionAdapter() {
 // public void widgetSelected(SelectionEvent e) {
 // if (e.widget == copyQNameItem) {
@@ -154,15 +149,16 @@ public class SpyFormToolkit extends FormToolkit {
 // }
 // };
 // copyQNameItem.addSelectionListener(listener);
-    menu.addMenuListener( new MenuAdapter() {
-
-      @Override
-      public void menuShown( MenuEvent e ) {
-        String href = ( String )formText.getSelectedLinkHref();
-        copyQNameItem.setEnabled( href != null && href.startsWith( CLASS_PROTOCOL_PREFIX ) );
-      }
-    } );
-  }
+	// menu.addMenuListener( new MenuAdapter() {
+	//
+	// @Override
+	// public void menuShown( MenuEvent e ) {
+	// String href = ( String )formText.getSelectedLinkHref();
+	// copyQNameItem.setEnabled( href != null && href.startsWith(
+	// CLASS_PROTOCOL_PREFIX ) );
+	// }
+	// } );
+	// }
 
   public String createInterfaceSection( FormText text, String title, Class[] clazzes ) {
     StringBuffer buffer = new StringBuffer();
@@ -289,14 +285,14 @@ public class SpyFormToolkit extends FormToolkit {
     }
   }
 
-  private String getSimpleName( Class clazz ) {
-    String fullName = clazz.getName();
-    int index = fullName.lastIndexOf( '.' );
-    String name = fullName.substring( index + 1, fullName.length() );
-    if( name != null )
-      return name;
-    return fullName;
-  }
+	// private String getSimpleName( Class clazz ) {
+	// String fullName = clazz.getName();
+	// int index = fullName.lastIndexOf( '.' );
+	// String name = fullName.substring( index + 1, fullName.length() );
+	// if( name != null )
+	// return name;
+	// return fullName;
+	// }
 
   private ToolBarManager createSectionToolbar( Section section ) {
     Object object = section.getData( "toolbarmanager" ); //$NON-NLS-1$

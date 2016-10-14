@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.ServiceTracker;
@@ -37,11 +36,12 @@ public class PDERuntimePlugin extends AbstractUIPlugin {
     inst = this;
   }
 
-  private static boolean isBundleAvailable( String bundleID ) {
-    Bundle bundle = Platform.getBundle( bundleID );
-    return bundle != null
-           && ( bundle.getState() & ( Bundle.ACTIVE | Bundle.STARTING | Bundle.RESOLVED ) ) != 0;
-  }
+	// private static boolean isBundleAvailable( String bundleID ) {
+	// Bundle bundle = Platform.getBundle( bundleID );
+	// return bundle != null
+	// && ( bundle.getState() & ( Bundle.ACTIVE | Bundle.STARTING |
+	// Bundle.RESOLVED ) ) != 0;
+	// }
 
   public static final boolean HAS_IDE_BUNDLES = false;
 

@@ -13,11 +13,11 @@ package org.eclipse.pde.internal.runtime;
 
 import org.eclipse.rap.rwt.RWT;
 
-
 public class PDERuntimeMessages {
-
   private static final String BUNDLE_NAME = "org.eclipse.pde.internal.runtime.pderuntimeresources";//$NON-NLS-1$
+  
   public String ActiveFormEditorSection_Active_Form_Page;
+  
   public String ActiveMenuSection_0;
   public String ActiveMenuSection_1;
   public String ActiveMenuSection_2;
@@ -26,6 +26,7 @@ public class PDERuntimeMessages {
   public String ActiveMenuSection_5;
   public String ActiveMenuSection_6;
   public String ActiveMenuSection_7;
+  
   public String RegistryView_refresh_label;
   public String RegistryView_refresh_tooltip;
   public String RegistryView_collapseAll_label;
@@ -34,6 +35,7 @@ public class PDERuntimeMessages {
   public String RegistryView_folders_libraries;
   public String RegistryView_folders_extensionPoints;
   public String RegistryView_folders_extensions;
+  
   public String RegistryView_found_problems;
   public String RegistryView_showRunning_label;
   public String RegistryView_showDisabled_label;
@@ -43,13 +45,16 @@ public class PDERuntimeMessages {
   public String RegistryView_stopAction_label;
   public String RegistryView_enableAction_label;
   public String RegistryView_diag_dialog_title;
+  
   public String RegistryView_diagnoseAction_label;
   public String RegistryView_disableAction_label;
   public String RegistryView_no_unresolved_constraints;
+  
   public String MessageHelper_missing_optional_required_bundle;
   public String MessageHelper_missing_required_bundle;
   public String MessageHelper_missing_imported_package;
   public String MessageHelper_missing_host;
+  
   public String SpyDialog_title;
   public String MenuSpyDialog_title;
   public String SpyDialog_close;
@@ -76,25 +81,41 @@ public class PDERuntimeMessages {
   public String SpyIDEUtil_noSourceFound_title;
   public String SpyIDEUtil_noSourceFound_message;
   public String SpyDialog_activePageBook_title;
+  
   public String SpyFormToolkit_saveImageAs_title;
   public String SpyFormToolkit_copyQualifiedName;
+  
   public String RegistryBrowser_Bundle;
+  
   public String RegistryBrowser_copy_label;
+  
   public String RegistryBrowser_ExtensionPoint;
+  
   public String RegistryBrowser_extensionPoints;
+  
   public String RegistryBrowser_GroupBy;
+  
   public String RegistryBrowser_InitializingView;
   public String RegistryBrowser_plugins;
+  
   public String RegistryBrowser_Service;
+  
   public String RegistryBrowser_Services;
+  
   public String RegistryBrowserLabelProvider_contributedBy;
+  
   public String RegistryBrowserLabelProvider_ExportedPackages;
+  
   public String RegistryBrowserLabelProvider_Fragments;
+  
   public String RegistryBrowserLabelProvider_ImportedPackages;
+  
   public String RegistryBrowserLabelProvider_Properties;
+  
   public String RegistryBrowserLabelProvider_RegisteredBy;
   public String RegistryBrowserLabelProvider_usedServices;
   public String RegistryBrowserLabelProvider_registeredServices;
+  
   public String RegistryBrowserLabelProvider_UsingBundles;
 
   public static PDERuntimeMessages get() {

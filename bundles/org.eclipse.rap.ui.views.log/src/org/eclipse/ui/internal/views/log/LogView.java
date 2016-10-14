@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2014 IBM Corporation and others.
+ * Copyright (c) 2000, 2016 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,12 +8,14 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 202583, 202584, 207344
- *     													bugs 207323, 207931, 207101
- *     													bugs 172658, 216341, 216657
- *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
+ *                                                      bugs 207323, 207931, 207101
+ *                                                      bugs 172658, 216341, 216657
+ *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648
  *     Tuukka Lehtonen <tuukka.lehtonen@semantum.fi>  - bug 247907
  *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
  *     Eike Stepper <stepper@esc-net.de>			  - bug 429372
+ *     Lars Vogel <Lars.Vogel@vogella.com> - Bug 485843
+ *     Patrik Suzzi <psuzzi@gmail.com> - Bug 501586
  *******************************************************************************/
 
 package org.eclipse.ui.internal.views.log;
@@ -62,7 +64,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	/**
 	 * Maximum tail size of the log file in Mega Bytes (1024 * 1024 Bytes) considers the last XYZ MB of the log file to create log entries.
-	 * This value should be increased if the size of the sub elements of the last (most recent) log entry in the log file exceeds the maximum tail size. 
+	 * This value should be increased if the size of the sub elements of the last (most recent) log entry in the log file exceeds the maximum tail size.
 	 **/
 	public static final String P_LOG_MAX_TAIL_SIZE = "maxLogTailSize"; //$NON-NLS-1$
 	public static final String P_LOG_LIMIT = "limit"; //$NON-NLS-1$
@@ -77,6 +79,8 @@ public class LogView extends ViewPart implements ILogListener {
 	public static final String P_ORDER_VALUE = "orderValue"; //$NON-NLS-1$
 	public static final String P_IMPORT_LOG = "importLog"; //$NON-NLS-1$
 	public static final String P_GROUP_BY = "groupBy"; //$NON-NLS-1$
+
+	private static final String LOG_ENTRY_GROUP = "logEntryGroup"; //$NON-NLS-1$
 
 	/** default values **/
 	private static final int DEFAULT_LOG_MAX_TAIL_SIZE = 1; // 1 Mega Byte
@@ -124,11 +128,12 @@ public class LogView extends ViewPart implements ILogListener {
 	private Tree fTree;
 	private FilteredTree fFilteredTree;
 	private LogViewLabelProvider fLabelProvider;
+	private String fSelectedStack;
 
 	private Action fPropertiesAction;
 	private Action fDeleteLogAction;
 	private Action fReadLogAction;
-//	private Action fCopyAction;
+	// private Action fCopyAction;
 	private Action fActivateViewAction;
 	private Action fOpenLogAction;
 	private Action fExportLogAction;
@@ -171,9 +176,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fInputFile = Platform.getLogFileLocation().toFile();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.WorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
-	 */
+	@Override
 	public void createPartControl(Composite parent) {
 		fDisplay = getSite().getShell().getDisplay();
 		Composite composite = new Composite(parent, SWT.NONE);
@@ -222,6 +225,7 @@ public class LogView extends ViewPart implements ILogListener {
 				}
 			}
 
+			@Override
 			public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 				// empty
 			}
@@ -288,7 +292,8 @@ public class LogView extends ViewPart implements ILogListener {
 			@Override
 			public void menuAboutToShow(IMenuManager manager) {
 //				manager.add(fCopyAction);
-//				manager.add(new Separator());
+				manager.add(new Separator(LOG_ENTRY_GROUP));
+				clearAction.setEnabled(!(elements.size() == 0 && groups.size() == 0));
 				manager.add(clearAction);
 				manager.add(fDeleteLogAction);
 				manager.add(fOpenLogAction);
@@ -318,6 +323,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createActivateViewAction() {
 		Action action = new Action(Messages.get().LogView_activate) { //       	
+			@Override
 			public void run() {
 				fMemento.putString(P_ACTIVATE, isChecked() ? "true" : "false"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
@@ -352,6 +358,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createDeleteLogAction() {
 		Action action = new Action(Messages.get().LogView_delete) {
+			@Override
 			public void run() {
 				doDeleteLog();
 			}
@@ -365,6 +372,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createExportLogAction() {
 		Action action = new Action(Messages.get().LogView_export) {
+			@Override
 			public void run() {
 				handleExport(true);
 			}
@@ -378,6 +386,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createExportLogEntryAction() {
 		Action action = new Action(Messages.get().LogView_exportEntry) {
+			@Override
 			public void run() {
 				handleExport(false);
 			}
@@ -391,6 +400,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createFilterAction() {
 		Action action = new Action(Messages.get().LogView_filter) {
+			@Override
 			public void run() {
 				handleFilter();
 			}
@@ -439,7 +449,7 @@ public class LogView extends ViewPart implements ILogListener {
 	}
 
 	private Action createPropertiesAction() {
-		Action action = new EventDetailsDialogAction(fTree, fFilteredTree.getViewer(), fMemento);
+		Action action = new EventDetailsDialogAction(this, fTree, fFilteredTree.getViewer(), fMemento);
 		action.setImageDescriptor(SharedImages.getImageDescriptor(SharedImages.DESC_PROPERTIES));
 		action.setDisabledImageDescriptor(SharedImages.getImageDescriptor(SharedImages.DESC_PROPERTIES_DISABLED));
 		action.setToolTipText(Messages.get().LogView_properties_tooltip);
@@ -449,6 +459,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private Action createReadLogAction() {
 		Action action = new Action(Messages.get().LogView_readLog_restore) {
+			@Override
 			public void run() {
 				fInputFile = Platform.getLogFileLocation().toFile();
 				reloadLog();
@@ -466,6 +477,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 */
 	private Action createShowTextFilter() {
 		Action action = new Action(Messages.get().LogView_show_filter_text) {
+			@Override
 			public void run() {
 				showFilterText(isChecked());
 			}
@@ -553,6 +565,7 @@ public class LogView extends ViewPart implements ILogListener {
 			}
 		});
 		fFilteredTree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
+			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				((EventDetailsDialogAction) fPropertiesAction).setComparator(fComparator);
 				fPropertiesAction.run();
@@ -639,6 +652,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fTree.setSortDirection(order == ASCENDING ? SWT.UP : SWT.DOWN);
 	}
 
+	@Override
 	public void dispose() {
 		writeSettings();
 		Platform.removeLogListener(this);
@@ -793,6 +807,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	protected void handleClear() {
 		BusyIndicator.showWhile(fTree.getDisplay(), new Runnable() {
+			@Override
 			public void run() {
 				elements.clear();
 				groups.clear();
@@ -810,6 +825,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 */
 	protected void reloadLog() {
 		IRunnableWithProgress op = new IRunnableWithProgress() {
+			@Override
 			public void run(IProgressMonitor monitor) {
 				monitor.beginTask(Messages.get().LogView_operation_reloading, IProgressMonitor.UNKNOWN);
 				readLogFile();
@@ -836,7 +852,7 @@ public class LogView extends ViewPart implements ILogListener {
 		groups.clear();
 
 		List result = new ArrayList();
-		LogSession lastLogSession = LogReader.parseLogFile(fInputFile, result, fMemento);
+		LogSession lastLogSession = LogReader.parseLogFile(this.fInputFile, getLogMaxTailSize(), result, this.fMemento);
 		if (lastLogSession != null && (lastLogSession.getDate() == null || isEclipseStartTime(lastLogSession.getDate()))) {
 			currentSession = lastLogSession;
 		} else {
@@ -922,6 +938,7 @@ public class LogView extends ViewPart implements ILogListener {
 			return;
 		}
 		Comparator dateComparator = new Comparator() {
+			@Override
 			public int compare(Object o1, Object o2) {
 				Date l1 = ((LogEntry) o1).getDate();
 				Date l2 = ((LogEntry) o2).getDate();
@@ -1011,6 +1028,7 @@ public class LogView extends ViewPart implements ILogListener {
 		return group;
 	}
 
+	@Override
 	public void logging(IStatus status, String plugin) {
 		if (!isPlatformLogOpen())
 			return;
@@ -1045,6 +1063,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 */
 	private void pushBatchedEntries() {
 		Job job = new Job(Messages.get().LogView_AddingBatchedEvents) {
+			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				for (int i = 0; i < batchedEntries.size(); i++) {
 					if (!monitor.isCanceled()) {
@@ -1089,6 +1108,7 @@ public class LogView extends ViewPart implements ILogListener {
 		final ViewPart view = this;
 		if (display != null) {
 			display.asyncExec(new Runnable() {
+				@Override
 				public void run() {
 					if (!fTree.isDisposed()) {
 						TreeViewer viewer = fFilteredTree.getViewer();
@@ -1113,6 +1133,7 @@ public class LogView extends ViewPart implements ILogListener {
 		}
 	}
 
+	@Override
 	public void setFocus() {
 		if (fFilteredTree != null) {
 			if (fMemento.getBoolean(P_SHOW_FILTER_TEXT).booleanValue()) {
@@ -1128,9 +1149,24 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private void handleSelectionChanged(ISelection selection) {
 		updateStatus(selection);
+		updateSelectionStack(selection);
 //		fCopyAction.setEnabled((!selection.isEmpty()) && ((IStructuredSelection) selection).getFirstElement() != null);
 		fPropertiesAction.setEnabled(!selection.isEmpty());
 		fExportLogEntryAction.setEnabled(!selection.isEmpty());
+	}
+
+	private void updateSelectionStack(ISelection selection) {
+		fSelectedStack = null;
+		if (selection instanceof IStructuredSelection) {
+			Object firstObject = ((IStructuredSelection) selection).getFirstElement();
+			if (firstObject instanceof LogEntry) {
+				String stack = ((LogEntry) firstObject).getStack();
+				if (stack != null && stack.length() > 0) {
+					fSelectedStack = stack;
+				}
+			}
+		}
+
 	}
 
 	private void updateStatus(ISelection selection) {
@@ -1177,6 +1213,7 @@ public class LogView extends ViewPart implements ILogListener {
 //		}
 //	}
 
+	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
 		if (memento == null)
@@ -1235,6 +1272,7 @@ public class LogView extends ViewPart implements ILogListener {
 		}
 	}
 
+	@Override
 	public void saveState(IMemento memento) {
 		if (this.fMemento == null || memento == null)
 			return;
@@ -1262,6 +1300,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 	private void addMouseListeners() {
 		Listener tableListener = new Listener() {
+			@Override
 			public void handleEvent(Event e) {
 				switch (e.type) {
 //					case SWT.MouseExit :
@@ -1277,9 +1316,10 @@ public class LogView extends ViewPart implements ILogListener {
 				}
 			}
 		};
-		int[] tableEvents = new int[] {SWT.MouseDown/*, SWT.MouseMove, SWT.MouseHover, SWT.MouseExit*/};
-		for (int i = 0; i < tableEvents.length; i++) {
-			fTree.addListener(tableEvents[i], tableListener);
+		int[] tableEvents = new int[] { SWT.MouseDown, SWT.MouseMove,
+				/* SWT.MouseHover, */ SWT.MouseExit };
+		for (int tableEvent : tableEvents) {
+			fTree.addListener(tableEvent, tableListener);
 		}
 	}
 
@@ -1293,6 +1333,7 @@ public class LogView extends ViewPart implements ILogListener {
 
 		source.addDragListener(new DragSourceAdapter() {
 
+			@Override
 			public void dragStart(DragSourceEvent event) {
 				ISelection selection = fFilteredTree.getViewer().getSelection();
 				if (selection.isEmpty()) {
@@ -1307,6 +1348,7 @@ public class LogView extends ViewPart implements ILogListener {
 				}
 			}
 
+			@Override
 			public void dragSetData(DragSourceEvent event) {
 				if (!TextTransfer.getInstance().isSupportedType(event.dataType)) {
 					return;
@@ -1347,6 +1389,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fTextLabel.setForeground(c);
 		fTextLabel.setEditable(false);
 		fTextShell.addDisposeListener(new DisposeListener() {
+			@Override
 			public void widgetDisposed(DisposeEvent e) {
 				onTextShellDispose(e);
 			}
@@ -1439,6 +1482,7 @@ public class LogView extends ViewPart implements ILogListener {
 	private void setComparator(byte sortType) {
 		if (sortType == DATE) {
 			fComparator = new Comparator() {
+				@Override
 				public int compare(Object e1, Object e2) {
 					long date1 = 0;
 					long date2 = 0;
@@ -1473,6 +1517,7 @@ public class LogView extends ViewPart implements ILogListener {
 			};
 		} else {
 			fComparator = new Comparator() {
+				@Override
 				public int compare(Object e1, Object e2) {
 					if ((e1 instanceof LogEntry) && (e2 instanceof LogEntry)) {
 						LogEntry entry1 = (LogEntry) e1;
@@ -1492,6 +1537,7 @@ public class LogView extends ViewPart implements ILogListener {
 	private ViewerComparator getViewerComparator(byte sortType) {
 		if (sortType == PLUGIN) {
 			return new ViewerComparator() {
+				@Override
 				public int compare(Viewer viewer, Object e1, Object e2) {
 					if ((e1 instanceof LogEntry) && (e2 instanceof LogEntry)) {
 						LogEntry entry1 = (LogEntry) e1;
@@ -1503,6 +1549,7 @@ public class LogView extends ViewPart implements ILogListener {
 			};
 		} else if (sortType == MESSAGE) {
 			return new ViewerComparator() {
+				@Override
 				public int compare(Viewer viewer, Object e1, Object e2) {
 					if ((e1 instanceof LogEntry) && (e2 instanceof LogEntry)) {
 						LogEntry entry1 = (LogEntry) e1;
@@ -1713,7 +1760,6 @@ public class LogView extends ViewPart implements ILogListener {
 						openDialog.open();
 					}
 				});
-//				}
 				return Status.OK_STATUS;
 			}
 		};
@@ -1746,4 +1792,9 @@ public class LogView extends ViewPart implements ILogListener {
 	public void setPlatformLog() {
 		setLogFile(Platform.getLogFileLocation().toFile());
 	}
+
+	public String getSelectedStack() {
+		return fSelectedStack;
+	}
+
 }

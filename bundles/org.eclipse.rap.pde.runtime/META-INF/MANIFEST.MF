@@ -10,7 +10,10 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.11.0,4.0.0)",
  org.eclipse.help;bundle-version="[3.3.0,4.0.0)";resolution:=optional,
  org.eclipse.rap.ui;bundle-version="[2.0.0,4.0.0)",
  org.eclipse.rap.ui.forms;bundle-version="[2.0.0,4.0.0)",
- org.eclipse.rap.filedialog;bundle-version="[3.0.0,4.0.0)"
+ org.eclipse.rap.filedialog;bundle-version="[3.0.0,4.0.0)",
+ org.eclipse.rap.jface.databinding;bundle-version="[3.0.0,4.0.0)",
+ org.eclipse.core.databinding.property;bundle-version="1.6.0",
+ org.eclipse.core.databinding.observable;bundle-version="1.6.0"
 Eclipse-LazyStart: true
 Export-Package: org.eclipse.pde.internal.runtime;x-internal:=true,
  org.eclipse.pde.internal.runtime.registry;x-internal:=true,
@@ -19,5 +22,5 @@ Export-Package: org.eclipse.pde.internal.runtime;x-internal:=true,
  org.eclipse.pde.internal.runtime.spy.dialogs;x-internal:=true,
  org.eclipse.pde.internal.runtime.spy.handlers;x-internal:=true,
  org.eclipse.pde.internal.runtime.spy.sections;x-internal:=true
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

@@ -848,23 +848,25 @@ public class LogView extends ViewPart implements ILogListener {
 	 * Reads the chosen backing log file
 	 */
 	void readLogFile() {
-		elements.clear();
-		groups.clear();
-
-		List result = new ArrayList();
-		LogSession lastLogSession = LogReader.parseLogFile(this.fInputFile, getLogMaxTailSize(), result, this.fMemento);
-		if (lastLogSession != null && (lastLogSession.getDate() == null || isEclipseStartTime(lastLogSession.getDate()))) {
-			currentSession = lastLogSession;
-		} else {
-			currentSession = null;
-		}
-
-		group(result);
-		limitEntriesCount();
-
 		if (fDisplay != null) {
 			fDisplay.asyncExec(new Runnable() {
 				public void run() {
+					elements.clear();
+					groups.clear();
+
+					List result = new ArrayList();
+					LogSession lastLogSession = LogReader.parseLogFile(fInputFile, getLogMaxTailSize(), result,
+							fMemento);
+					if (lastLogSession != null
+							&& (lastLogSession.getDate() == null || isEclipseStartTime(lastLogSession.getDate()))) {
+						currentSession = lastLogSession;
+					} else {
+						currentSession = null;
+					}
+
+					group(result);
+					limitEntriesCount();
+
 					setContentDescription(getTitleSummary());
 				}
 			});
@@ -1104,10 +1106,9 @@ public class LogView extends ViewPart implements ILogListener {
 	private void asyncRefresh(final boolean activate) {
 		if (fTree.isDisposed())
 			return;
-		Display display = fTree.getDisplay();
 		final ViewPart view = this;
-		if (display != null) {
-			display.asyncExec(new Runnable() {
+		if (fDisplay != null) {
+			fDisplay.asyncExec(new Runnable() {
 				@Override
 				public void run() {
 					if (!fTree.isDisposed()) {

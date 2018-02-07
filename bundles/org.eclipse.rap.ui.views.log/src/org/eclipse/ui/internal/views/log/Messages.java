@@ -77,6 +77,7 @@ public class Messages {
 	public String LogView_LogFileTitle;
 	public String LogView_OpenFile;
 	public String LogView_WorkspaceLogFile;
+	public String LogView_confirmDelete_deleteButton;
 
 	public String LogViewLabelProvider_Session;
 	public String LogViewLabelProvider_truncatedMessage;

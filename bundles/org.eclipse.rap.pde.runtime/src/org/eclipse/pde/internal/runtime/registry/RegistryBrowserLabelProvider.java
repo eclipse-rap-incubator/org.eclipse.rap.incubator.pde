@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,7 +7,6 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Arnaud Mergey <a_mergey@yahoo.fr> - RAP port
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.registry;
 
@@ -387,14 +386,8 @@ public class RegistryBrowserLabelProvider extends LabelProvider {
                           ? "" : element.toString(); //$NON-NLS-1$
   }
 
-// public void update( ViewerCell cell ) {
-// StyledString string = getStyledText( cell.getElement() );
-// cell.setText( string.getString() );
-// cell.setStyleRanges( string.getStyleRanges() );
-// cell.setImage( getImage( cell.getElement() ) );
-// super.update( cell );
-// }
-  public String getText( Object element ) {
-    return getStyledText( element );
-  }
+	@Override
+	public String getText(Object element) {
+		return getStyledText(element);
+	}
 }

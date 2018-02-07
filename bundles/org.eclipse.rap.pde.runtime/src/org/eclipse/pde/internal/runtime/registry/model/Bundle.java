@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009 IBM Corporation and others.
+ * Copyright (c) 2009, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -154,60 +154,65 @@ public class Bundle extends ModelObject {
 		if (model == null)
 			return new ExtensionPoint[0];
 		ExtensionPoint[] extPoints = model.getExtensionPoints();
-		List result = new ArrayList();
+		List<ExtensionPoint> result = new ArrayList<>();
 
-		for (int i = 0; i < extPoints.length; i++) {
-			if (extPoints[i].getContributorId().longValue() == id)
-				result.add(extPoints[i]);
+		for (ExtensionPoint extPoint : extPoints) {
+			if (extPoint.getContributorId().longValue() == id){
+				result.add(extPoint);
+			}
 		}
-		return (ExtensionPoint[]) result.toArray(new ExtensionPoint[result.size()]);
+		return result.toArray(new ExtensionPoint[result.size()]);
 	}
 
 	public Extension[] getExtensions() {
 		if (model == null)
 			return new Extension[0];
 		ExtensionPoint[] extPoints = model.getExtensionPoints();
-		List result = new ArrayList();
+		List<Extension> result = new ArrayList<>();
 
-		for (int i = 0; i < extPoints.length; i++) {
-			for (Iterator it = extPoints[i].getExtensions().iterator(); it.hasNext();) {
-				Extension a = (Extension) it.next();
-				if (a.getContributorId().longValue() == id)
+		for (ExtensionPoint extPoint : extPoints) {
+			for (Iterator<Extension> it = extPoint.getExtensions().iterator(); it.hasNext();) {
+				Extension a = it.next();
+				if (a.getContributorId().longValue() == id){
 					result.add(a);
+				}
 			}
 
 		}
-		return (Extension[]) result.toArray(new Extension[result.size()]);
+		return result.toArray(new Extension[result.size()]);
 	}
 
 	public ServiceRegistration[] getRegisteredServices() {
 		if (model == null)
 			return new ServiceRegistration[0];
 		ServiceRegistration[] services = model.getServices();
-		List result = new ArrayList();
+		List<ServiceRegistration> result = new ArrayList<>();
 
-		for (int i = 0; i < services.length; i++) {
-			if (symbolicName.equals(services[i].getBundle()))
-				result.add(services[i]);
+		for (ServiceRegistration service : services) {
+			if (symbolicName.equals(service.getBundle())){
+				result.add(service);
+			}
 		}
-		return (ServiceRegistration[]) result.toArray(new ServiceRegistration[result.size()]);
+		return result.toArray(new ServiceRegistration[result.size()]);
 	}
 
 	public ServiceRegistration[] getServicesInUse() {
 		if (model == null)
 			return new ServiceRegistration[0];
 		ServiceRegistration[] services = model.getServices();
-		List result = new ArrayList();
+		List<ServiceRegistration> result = new ArrayList<>();
 
-		for (int i = 0; i < services.length; i++) {
-			long[] usingBundles = services[i].getUsingBundleIds();
-			if (usingBundles != null) {
-				for (int j = 0; j < usingBundles.length; j++)
-					if (id == usingBundles[j])
-						result.add(services[i]);
+		for (ServiceRegistration service : services) {
+			long[] usingBundleIds = service.getUsingBundleIds();
+			if (usingBundleIds != null) {
+				for (long usingBundleId : usingBundleIds){
+					if (id == usingBundleId){
+						result.add(service);
+					}
+				}
 			}
 		}
-		return (ServiceRegistration[]) result.toArray(new ServiceRegistration[result.size()]);
+		return result.toArray(new ServiceRegistration[result.size()]);
 	}
 
 	@Override

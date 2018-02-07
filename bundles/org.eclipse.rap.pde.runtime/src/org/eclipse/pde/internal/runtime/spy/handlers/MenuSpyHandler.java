@@ -15,9 +15,11 @@ package org.eclipse.pde.internal.runtime.spy.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.pde.internal.runtime.PDERuntimePluginImages;
 import org.eclipse.pde.internal.runtime.spy.dialogs.MenuSpyDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -41,9 +43,8 @@ public class MenuSpyHandler extends AbstractHandler implements Listener {
 			display.addFilter(SWT.Show, this);
 			if (display.getActiveShell() != null) {
 				defaultCursor = display.getActiveShell().getCursor();
-				// Image image =
-				// PDERuntimePluginImages.get(PDERuntimePluginImages.IMG_MENUSPY_OBJ);
-				// spyCursor = new Cursor( display, image.getImageData());
+				Image image = PDERuntimePluginImages.get(PDERuntimePluginImages.IMG_MENUSPY_OBJ);
+				spyCursor = /* new Cursor(display, image.getImageData(), 7, 7); */ new Cursor(display, SWT.CURSOR_HAND);
 				display.getActiveShell().setCursor(spyCursor);
 			}
 		}

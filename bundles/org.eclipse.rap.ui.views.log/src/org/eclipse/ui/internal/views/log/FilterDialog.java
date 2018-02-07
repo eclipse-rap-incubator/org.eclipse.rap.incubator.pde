@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2016 IBM Corporation and others.
+ * Copyright (c) 2003, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,8 @@ import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -120,25 +121,19 @@ public class FilterDialog extends TrayDialog {
 		});
 
 		limitText = new Text(comp, SWT.BORDER);
-		limitText.addVerifyListener(new VerifyListener() {
-			@Override
-			public void verifyText(VerifyEvent e) {
-				if (Character.isLetter(e.character)) {
-					e.doit = false;
-				}
+		limitText.addVerifyListener(e -> {
+			if (Character.isLetter(e.character)) {
+				e.doit = false;
 			}
 		});
-		limitText.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				try {
-					if (okButton == null)
-						return;
-					int value = Integer.parseInt(limitText.getText());
-					okButton.setEnabled(value > 0);
-				} catch (NumberFormatException e1) {
-					okButton.setEnabled(false);
-				}
+		limitText.addModifyListener(e -> {
+			try {
+				if (okButton == null)
+					return;
+				int value = Integer.parseInt(limitText.getText());
+				okButton.setEnabled(value > 0);
+			} catch (NumberFormatException e1) {
+				okButton.setEnabled(false);
 			}
 		});
 		limitText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -149,26 +144,20 @@ public class FilterDialog extends TrayDialog {
 		maxLogTailSizeLabel.setText(Messages.get().LogView_FilterDialog_maxLogTailSize);
 
 		maxLogTailSizeText = new Text(comp, SWT.BORDER);
-		maxLogTailSizeText.addVerifyListener(new VerifyListener() {
-			@Override
-			public void verifyText(VerifyEvent e) {
-				if (Character.isLetter(e.character)) {
-					e.doit = false;
-				}
+		maxLogTailSizeText.addVerifyListener(e -> {
+			if (Character.isLetter(e.character)) {
+				e.doit = false;
 			}
 		});
 
-		maxLogTailSizeText.addModifyListener(new ModifyListener() {
-			@Override
-			public void modifyText(ModifyEvent e) {
-				try {
-					if (okButton == null)
-						return;
-					int value = Integer.parseInt(maxLogTailSizeText.getText());
-					okButton.setEnabled(value > 0);
-				} catch (NumberFormatException e1) {
-					okButton.setEnabled(false);
-				}
+		maxLogTailSizeText.addModifyListener(e -> {
+			try {
+				if (okButton == null)
+					return;
+				int value = Integer.parseInt(maxLogTailSizeText.getText());
+				okButton.setEnabled(value > 0);
+			} catch (NumberFormatException e1) {
+				okButton.setEnabled(false);
 			}
 		});
 		maxLogTailSizeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -275,15 +264,11 @@ public class FilterDialog extends TrayDialog {
 	}
 
 	private void addFilter() {
-		IInputValidator validator = new IInputValidator() {
-
-			@Override
-			public String isValid(String newText) {
-				return newText.indexOf(';') >= 0 ? Messages.get().FilterDialog_FilterShouldntContainSemicolon : null;
-			}
-
-		};
-		InputDialog dialog = new InputDialog(getShell(), Messages.get().FilterDialog_AddFilterTitle, Messages.get().FilterDialog_AddFliterLabel, null, validator);
+		IInputValidator validator = newText -> newText.indexOf(';') >= 0
+				? Messages.get().FilterDialog_FilterShouldntContainSemicolon
+				: null;
+		InputDialog dialog = new InputDialog(getShell(), Messages.get().FilterDialog_AddFilterTitle,
+				Messages.get().FilterDialog_AddFliterLabel, null, validator);
 		if (dialog.open() == Window.OK) {
 			String value = dialog.getValue().trim();
 

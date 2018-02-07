@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2008, 2011 IBM Corporation and others.
+ *  Copyright (c) 2008, 2017 IBM Corporation and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -72,13 +72,14 @@ public class ServiceRegistration extends ModelObject implements Comparable {
 			return new Bundle[0];
 		}
 
-		Set bundles = new HashSet();
-		for (int i = 0; i < usingBundles.length; i++) {
-			Bundle bundle = model.getBundle(new Long(usingBundles[i]));
-			if (bundle != null)
+		Set<Bundle> bundles = new HashSet<>();
+		for (long usingBundle : usingBundles) {
+			Bundle bundle = model.getBundle(Long.valueOf(usingBundle));
+			if (bundle != null){
 				bundles.add(bundle);
+			}
 		}
-		return (Bundle[]) bundles.toArray(new Bundle[bundles.size()]);
+		return bundles.toArray(new Bundle[bundles.size()]);
 	}
 
 	public Property[] getProperties() {
@@ -86,8 +87,7 @@ public class ServiceRegistration extends ModelObject implements Comparable {
 	}
 
 	public Property getProperty(String name) {
-		for (int p = 0; p < properties.length; p++) {
-			Property property = properties[p];
+		for (Property property : properties) {
 			if (name.equals(property.getName())) {
 				return property;
 			}
@@ -102,7 +102,7 @@ public class ServiceRegistration extends ModelObject implements Comparable {
 			CharSequence charSequence = (CharSequence) value;
 			return charSequence.toString();
 		} else if (value instanceof Object[]) {
-			StringBuffer buff = new StringBuffer();
+			StringBuilder buff = new StringBuilder();
 			appendString(buff, value);
 
 			return buff.toString();
@@ -111,7 +111,7 @@ public class ServiceRegistration extends ModelObject implements Comparable {
 		}
 	}
 
-	public static void appendString(StringBuffer buff, Object value) {
+	public static void appendString(StringBuilder buff, Object value) {
 		if (value == null) {
 			// ignore
 		} else if (value instanceof Object[]) {

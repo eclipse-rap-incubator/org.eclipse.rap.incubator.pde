@@ -14,5 +14,5 @@ Bundle-Localization: plugin
 Export-Package: org.eclipse.ui.internal.views.log;x-friends:="org.eclipse.pde.ui"
 Bundle-ActivationPolicy: lazy
 Import-Package: com.ibm.icu.text,
- javax.servlet;version="[2.3.0,4.0.0)",
- javax.servlet.http;version="[2.3.0,4.0.0)"
+ javax.servlet;version="2.3.0",
+ javax.servlet.http;version="2.3.0"

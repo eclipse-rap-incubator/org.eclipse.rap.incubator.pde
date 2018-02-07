@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2016 IBM Corporation and others.
+ * Copyright (c) 2008, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
 package org.eclipse.ui.internal.views.log;
 
 import java.util.*;
+import java.util.Map.Entry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.widgets.Control;
@@ -151,16 +152,14 @@ public class ImportLogAction extends Action implements IMenuCreator {
 	 * @return list of all actions from LogFilesManager
 	 */
 	private ImportConfigurationLogAction[] getLogActions() {
-		List result = new ArrayList();
-		Map sources = LogFilesManager.getLogSources();
-
-		for (Iterator j = sources.keySet().iterator(); j.hasNext();) {
-			String name = (String) j.next();
-			String location = (String) sources.get(name);
+		List<ImportConfigurationLogAction> result = new ArrayList<>();
+		Map<?, ?> sources = LogFilesManager.getLogSources();
+		for (Entry<?, ?> entry : sources.entrySet()) {
+			String name = (String) entry.getKey();
+			String location = (String) entry.getValue();
 			result.add(new ImportConfigurationLogAction(name, location));
 		}
-
-		return (ImportConfigurationLogAction[]) result.toArray(new ImportConfigurationLogAction[result.size()]);
+		return result.toArray(new ImportConfigurationLogAction[result.size()]);
 	}
 
 	/**

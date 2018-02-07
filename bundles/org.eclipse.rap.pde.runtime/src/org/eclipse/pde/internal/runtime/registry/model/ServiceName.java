@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, 2015 IBM Corporation and others.
+ * Copyright (c) 2009, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,14 +17,14 @@ import org.osgi.framework.ServiceReference;
 public class ServiceName extends ModelObject implements Comparable {
 
 	private String[] classes;
-	private ServiceReference reference;
+	private ServiceReference<?> reference;
 
-	public ServiceName(String[] classes, ServiceReference ref) {
+	public ServiceName(String[] classes, ServiceReference<?> ref) {
 		this.classes = classes;
 		this.reference = ref;
 	}
 
-	public ServiceReference getServiceReference() {
+	public ServiceReference<?> getServiceReference() {
 		return this.reference;
 	}
 
@@ -44,8 +44,8 @@ public class ServiceName extends ModelObject implements Comparable {
 		if (array == null)
 			return 0;
 		int result = 1;
-		for (int index = 0; index < array.length; index++) {
-			result = prime * result + (array[index] == null ? 0 : array[index].hashCode());
+		for (Object o : array) {
+			result = prime * result + (o == null ? 0 : o.hashCode());
 		}
 		return result;
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 20012 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,12 +13,11 @@
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
-import java.text.DateFormat;
+import com.ibm.icu.text.DateFormat;
 import java.util.ArrayList;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.rap.rwt.RWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 
@@ -32,13 +31,12 @@ public class LogViewLabelProvider extends LabelProvider implements ITableLabelPr
 	private Image warningImage;
 	private Image errorWithStackImage;
 	private Image hierarchicalImage;
-	ArrayList consumers = new ArrayList();
-	private DateFormat dateFormat;
+	ArrayList<Object> consumers = new ArrayList<>();
+	private DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
 
 	private LogView logView;
 
 	public LogViewLabelProvider(LogView logView) {
-		dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, RWT.getLocale());
 		errorImage = SharedImages.getImage(SharedImages.DESC_ERROR_ST_OBJ);
 		warningImage = SharedImages.getImage(SharedImages.DESC_WARNING_ST_OBJ);
 		infoImage = SharedImages.getImage(SharedImages.DESC_INFO_ST_OBJ);
@@ -49,12 +47,14 @@ public class LogViewLabelProvider extends LabelProvider implements ITableLabelPr
 		this.logView = logView;
 	}
 
+	@Override
 	public void dispose() {
 		if (consumers.size() == 0) {
 			super.dispose();
 		}
 	}
 
+	@Override
 	public Image getColumnImage(Object element, int columnIndex) {
 		if (element instanceof Group) {
 			return (columnIndex == 0) ? hierarchicalImage : null;
@@ -76,6 +76,7 @@ public class LogViewLabelProvider extends LabelProvider implements ITableLabelPr
 		return null;
 	}
 
+	@Override
 	public String getColumnText(Object element, int columnIndex) {
 		if ((element instanceof LogSession) && (columnIndex == 2)) {
 			LogSession session = (LogSession) element;
@@ -96,8 +97,8 @@ public class LogViewLabelProvider extends LabelProvider implements ITableLabelPr
 					if (entry.getMessage() != null) {
 						String message = entry.getMessage();
 						if (message.length() > MAX_LABEL_LENGTH) {
-							String warning = Messages.get().LogViewLabelProvider_truncatedMessage;
-							StringBuffer sb = new StringBuffer(message.substring(0, MAX_LABEL_LENGTH - warning.length()));
+						String warning = Messages.get().LogViewLabelProvider_truncatedMessage;
+							StringBuilder sb = new StringBuilder(message.substring(0, MAX_LABEL_LENGTH - warning.length()));
 							sb.append(warning);
 							return sb.toString();
 						}
@@ -126,6 +127,7 @@ public class LogViewLabelProvider extends LabelProvider implements ITableLabelPr
 		}
 	}
 
+	@Override
 	public Font getFont(Object element, int columnIndex) {
 		if ((element instanceof LogSession) && (logView.isCurrentLogSession((LogSession) element))) {
 			return JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);

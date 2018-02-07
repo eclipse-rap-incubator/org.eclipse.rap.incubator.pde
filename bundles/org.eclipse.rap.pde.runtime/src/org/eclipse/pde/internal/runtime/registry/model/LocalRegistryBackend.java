@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2015 IBM Corporation and others.
+ * Copyright (c) 2008, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     Wolfgang Schell <ws@jetztgrad.net> - bug 259348
  *     Arnaud Mergey <a_mergey@yahoo.fr>
+ *     Martin Karpisek <martin.karpisek@gmail.com> - Bug 507831
  *******************************************************************************/
 package org.eclipse.pde.internal.runtime.registry.model;
 
@@ -48,11 +49,11 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 		PDERuntimePlugin.getDefault().getBundleContext().removeServiceListener(this);
 	}
 
-	protected static boolean isRegisteredService(org.osgi.framework.Bundle bundle, ServiceReference ref) {
+	protected static boolean isRegisteredService(org.osgi.framework.Bundle bundle, ServiceReference<?> ref) {
 		return bundle.equals(ref.getBundle());
 	}
 
-	protected static boolean isServiceInUse(org.osgi.framework.Bundle bundle, ServiceReference ref) {
+	protected static boolean isServiceInUse(org.osgi.framework.Bundle bundle, ServiceReference<?> ref) {
 		org.osgi.framework.Bundle[] usingBundles = ref.getUsingBundles();
 		return (usingBundles != null && Arrays.asList(usingBundles).contains(bundle));
 	}
@@ -80,15 +81,16 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 
 		MultiStatus problems = new MultiStatus(PDERuntimePlugin.ID, IStatus.INFO,
 				PDERuntimeMessages.get().RegistryView_found_problems, null);
-		for (int i = 0; i < resolverErrors.length; i++) {
-			if ((resolverErrors[i].getType() & (ResolverError.MISSING_FRAGMENT_HOST | ResolverError.MISSING_GENERIC_CAPABILITY | ResolverError.MISSING_IMPORT_PACKAGE | ResolverError.MISSING_REQUIRE_BUNDLE)) != 0)
+		for (ResolverError error : resolverErrors) {
+			if ((error.getType() & (ResolverError.MISSING_FRAGMENT_HOST | ResolverError.MISSING_GENERIC_CAPABILITY | ResolverError.MISSING_IMPORT_PACKAGE | ResolverError.MISSING_REQUIRE_BUNDLE)) != 0){
 				continue;
-			IStatus status = new Status(IStatus.WARNING, PDERuntimePlugin.ID, resolverErrors[i].toString());
+			}
+			IStatus status = new Status(IStatus.WARNING, PDERuntimePlugin.ID, error.toString());
 			problems.add(status);
 		}
 
-		for (int i = 0; i < unsatisfied.length; i++) {
-			IStatus status = new Status(IStatus.WARNING, PDERuntimePlugin.ID, MessageHelper.getResolutionFailureMessage(unsatisfied[i]));
+		for (VersionConstraint constraint : unsatisfied) {
+			IStatus status = new Status(IStatus.WARNING, PDERuntimePlugin.ID, MessageHelper.getResolutionFailureMessage(constraint));
 			problems.add(status);
 		}
 
@@ -101,11 +103,12 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 			return;
 
 		org.osgi.framework.Bundle[] newBundles = PDERuntimePlugin.getDefault().getBundleContext().getBundles();
-		for (int i = 0; i < newBundles.length; i++) {
-			if (monitor.isCanceled())
+		for (org.osgi.framework.Bundle bundle : newBundles) {
+			if (monitor.isCanceled()){
 				return;
+			}
 
-			Bundle ba = createBundleAdapter(newBundles[i]);
+			Bundle ba = createBundleAdapter(bundle);
 			listener.addBundle(ba);
 		}
 	}
@@ -131,7 +134,7 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 		if (monitor.isCanceled())
 			return;
 
-		ServiceReference[] references = null;
+		ServiceReference<?>[] references = null;
 		try {
 			references = PDERuntimePlugin.getDefault().getBundleContext().getAllServiceReferences(null, null);
 		} catch (InvalidSyntaxException e) { // nothing
@@ -141,11 +144,12 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 			return;
 		}
 
-		for (int i = 0; i < references.length; i++) {
-			if (monitor.isCanceled())
+		for (ServiceReference<?> reference : references) {
+			if (monitor.isCanceled()){
 				return;
+			}
 
-			ServiceRegistration service = createServiceReferenceAdapter(references[i]);
+			ServiceRegistration service = createServiceReferenceAdapter(reference);
 			// The list of registered services is volatile, avoid adding unregistered services to the listener
 			if (service.getBundle() != null) {
 				listener.addService(service);
@@ -162,7 +166,7 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 		adapter.setEnabled(getIsEnabled(bundle));
 		adapter.setLocation(createLocation(bundle));
 
-		String fragmentHost = (String) bundle.getHeaders().get(Constants.FRAGMENT_HOST);
+		String fragmentHost = bundle.getHeaders().get(Constants.FRAGMENT_HOST);
 		if (fragmentHost != null) {
 			ManifestElement[] header;
 			try {
@@ -230,7 +234,7 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 
 	private static Long getBundleId(String name) {
 		BundleDescription descr = PDERuntimePlugin.getDefault().getPlatformAdmin().getState(false).getBundle(name, null);
-		return descr == null ? null : new Long(descr.getBundleId());
+		return descr == null ? null : Long.valueOf(descr.getBundleId());
 	}
 
 	private ExtensionPoint createExtensionPointAdapter(IExtensionPoint extensionPoint) {
@@ -252,7 +256,7 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 	 * @param ref the service reference to get the registration for
 	 * @return a new service registration containing information from the service reference
 	 */
-	private ServiceRegistration createServiceReferenceAdapter(ServiceReference ref) {
+	private ServiceRegistration createServiceReferenceAdapter(ServiceReference<?> ref) {
 		ServiceRegistration service = new ServiceRegistration();
 		service.setId(((Long) ref.getProperty(org.osgi.framework.Constants.SERVICE_ID)).longValue());
 		org.osgi.framework.Bundle bundle = ref.getBundle();
@@ -322,7 +326,7 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 	}
 
 	private Object[] getManifestHeaderArray(org.osgi.framework.Bundle bundle, String headerKey) {
-		String libraries = (String) bundle.getHeaders().get(headerKey);
+		String libraries = bundle.getHeaders().get(headerKey);
 		try {
 			ManifestElement[] elements = ManifestElement.parseHeader(headerKey, libraries);
 			if (elements == null)
@@ -442,7 +446,7 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 
 	@Override
 	public void serviceChanged(ServiceEvent event) {
-		ServiceReference ref = event.getServiceReference();
+		ServiceReference<?> ref = event.getServiceReference();
 		ServiceRegistration adapter = createServiceReferenceAdapter(ref);
 
 		switch (event.getType()) {
@@ -494,9 +498,9 @@ public class LocalRegistryBackend implements IRegistryEventListener, BundleListe
 
 		if (enabled) {
 			DisabledInfo[] infos = state.getDisabledInfos(desc);
-			for (int i = 0; i < infos.length; i++) {
+			for (DisabledInfo info : infos) {
 				PlatformAdmin platformAdmin = PDERuntimePlugin.getDefault().getPlatformAdmin();
-				platformAdmin.removeDisabledInfo(infos[i]);
+				platformAdmin.removeDisabledInfo(info);
 			}
 		} else {
 			DisabledInfo info = new DisabledInfo("org.eclipse.pde.ui", "Disabled via PDE", desc); //$NON-NLS-1$ //$NON-NLS-2$

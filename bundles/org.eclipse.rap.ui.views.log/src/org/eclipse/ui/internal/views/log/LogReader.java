@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2014 IBM Corporation and others.
+ * Copyright (c) 2000, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@
 package org.eclipse.ui.internal.views.log;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.*;
 import org.eclipse.core.runtime.IStatus;
@@ -48,10 +49,10 @@ class LogReader {
 		PrintWriter writer = null;
 		int state = UNKNOWN_STATE;
 		LogSession currentSession = null;
-		BufferedReader reader = null;
-		try {
-			long maxTailSizeInBytes = maxLogTailSizeInMegaByte > 0 ? maxLogTailSizeInMegaByte * ONE_MEGA_BYTE_IN_BYTES : ONE_MEGA_BYTE_IN_BYTES;
-			reader = new BufferedReader(new InputStreamReader(new TailInputStream(file, maxTailSizeInBytes), "UTF-8")); //$NON-NLS-1$
+		long maxTailSizeInBytes = maxLogTailSizeInMegaByte > 0 ? maxLogTailSizeInMegaByte * ONE_MEGA_BYTE_IN_BYTES
+				: ONE_MEGA_BYTE_IN_BYTES;
+		try (BufferedReader reader = new BufferedReader(
+				new InputStreamReader(new TailInputStream(file, maxTailSizeInBytes), StandardCharsets.UTF_8))) {
 			for (;;) {
 				String line0 = reader.readLine();
 				if (line0 == null)
@@ -146,18 +147,14 @@ class LogReader {
 				writerState = UNKNOWN_STATE;
 				current.setStack(swriter.toString());
 			}
-		} catch (FileNotFoundException e) { // do nothing
 		} catch (IOException e) { // do nothing
 		} finally {
 			if (file.length() > maxLogTailSizeInMegaByte && entries.size() == 0) {
-				LogEntry entry = new LogEntry(new Status(IStatus.WARNING, Activator.PLUGIN_ID, NLS.bind(Messages.get().LogReader_warn_noEntryWithinMaxLogTailSize, new Long(maxLogTailSizeInMegaByte))));
+				LogEntry entry = new LogEntry(new Status(IStatus.WARNING, Activator.PLUGIN_ID, NLS.bind(
+						Messages.get().LogReader_warn_noEntryWithinMaxLogTailSize,
+						Long.valueOf(maxLogTailSizeInMegaByte))));
 				entry.setSession(currentSession == null ? new LogSession() : currentSession);
 				entries.add(entry);
-			}
-			try {
-				if (reader != null)
-					reader.close();
-			} catch (IOException e1) { // do nothing
 			}
 			if (writer != null) {
 				setData(current, session, writerState, swriter);
@@ -182,7 +179,7 @@ class LogReader {
 		} else if (writerState == SESSION_STATE && session != null) {
 			session.setSessionData(swriter.toString());
 		} else if (writerState == MESSAGE_STATE && current != null) {
-			StringBuffer sb = new StringBuffer(current.getMessage());
+			StringBuilder sb = new StringBuilder(current.getMessage());
 			String continuation = swriter.toString();
 			if (continuation.length() > 0)
 				sb.append(System.getProperty("line.separator")).append(continuation); //$NON-NLS-1$
@@ -191,8 +188,7 @@ class LogReader {
 	}
 
 	/**
-	 * Updates the {@link currentSession} to be the one that is not null or has most recent date.
-	 * @param session
+	 * Updates the currentSession to be the one that is not null or has most recent date.
 	 */
 	private static LogSession updateCurrentSession(LogSession currentSession, LogSession session) {
 		if (currentSession == null) {
@@ -212,10 +208,6 @@ class LogReader {
 
 	/**
 	 * Adds entry to the list if it's not filtered. Removes entries exceeding the count limit.
-	 *
-	 * @param entry
-	 * @param entries
-	 * @param memento
 	 */
 	private static void addEntry(LogEntry entry, List entries, IMemento memento) {
 
@@ -233,9 +225,6 @@ class LogReader {
 
 	/**
 	 * Returns whether given entry is logged (true) or filtered (false).
-	 *
-	 * @param entry
-	 * @param memento
 	 * @return is entry logged or filtered
 	 */
 	public static boolean isLogged(LogEntry entry, IMemento memento) {

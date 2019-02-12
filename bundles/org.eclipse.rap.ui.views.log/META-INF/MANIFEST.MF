@@ -16,3 +16,4 @@ Bundle-ActivationPolicy: lazy
 Import-Package: com.ibm.icu.text,
  javax.servlet;version="2.3.0",
  javax.servlet.http;version="2.3.0"
+Automatic-Module-Name: org.eclipse.rap.ui.views.log

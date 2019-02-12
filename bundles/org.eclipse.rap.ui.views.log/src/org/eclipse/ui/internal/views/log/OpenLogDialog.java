@@ -1,9 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2013 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * Copyright (c) 2003, 2017 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -83,13 +86,13 @@ public final class OpenLogDialog extends TrayDialog {
 
 	private String getLogSummary() {
 		StringWriter out = new StringWriter();
-		PrintWriter writer = new PrintWriter(out);
-		if (logFile.length() > LogReader.MAX_FILE_LENGTH) {
-			readLargeFileWithMonitor(writer);
-		} else {
-			readFileWithMonitor(writer);
+		try (PrintWriter writer = new PrintWriter(out)) {
+			if (logFile.length() > LogReader.MAX_FILE_LENGTH) {
+				readLargeFileWithMonitor(writer);
+			} else {
+				readFileWithMonitor(writer);
+			}
 		}
-		writer.close();
 		return out.toString();
 	}
 
@@ -157,27 +160,19 @@ public final class OpenLogDialog extends TrayDialog {
 
 	// reading file within MAX_FILE_LENGTH size
 	void readFile(PrintWriter writer) throws FileNotFoundException, IOException {
-		BufferedReader bReader = null;
-		try {
-			bReader = new BufferedReader(new FileReader(logFile));
+		try (BufferedReader bReader = new BufferedReader(new FileReader(logFile))) {
+
 			while (bReader.ready()) {
 				writer.println(bReader.readLine());
-			}
-		} finally {
-			try {
-				if (bReader != null)
-					bReader.close();
-			} catch (IOException e1) { // do nothing
 			}
 		}
 	}
 
 	// reading large files
 	void readLargeFile(PrintWriter writer) throws FileNotFoundException, IOException {
-		RandomAccessFile random = null;
 		boolean hasStarted = false;
-		try {
-			random = new RandomAccessFile(logFile, "r"); //$NON-NLS-1$
+		try (RandomAccessFile random = new RandomAccessFile(logFile, "r");) { //$NON-NLS-1$
+
 			random.seek(logFile.length() - LogReader.MAX_FILE_LENGTH);
 			for (;;) {
 				String line = random.readLine();
@@ -192,25 +187,16 @@ public final class OpenLogDialog extends TrayDialog {
 					writer.println(line);
 				continue;
 			}
-		} finally {
-			try {
-				if (random != null)
-					random.close();
-			} catch (IOException e1) { // do nothing
-			}
 		}
 	}
 
 	private void readLargeFileWithMonitor(final PrintWriter writer) {
-		IRunnableWithProgress runnable = new IRunnableWithProgress() {
-			@Override
-			public void run(IProgressMonitor monitor) {
-				monitor.beginTask(Messages.get().OpenLogDialog_message, IProgressMonitor.UNKNOWN);
-				try {
-					readLargeFile(writer);
-				} catch (IOException e) {
-					writer.println(Messages.get().OpenLogDialog_cannotDisplay);
-				}
+		IRunnableWithProgress runnable = monitor -> {
+			monitor.beginTask(Messages.get().OpenLogDialog_message, IProgressMonitor.UNKNOWN);
+			try {
+				readLargeFile(writer);
+			} catch (IOException e) {
+				writer.println(Messages.get().OpenLogDialog_cannotDisplay);
 			}
 		};
 		ProgressMonitorDialog dialog = new ProgressMonitorDialog(getParentShell());
@@ -222,15 +208,12 @@ public final class OpenLogDialog extends TrayDialog {
 	}
 
 	private void readFileWithMonitor(final PrintWriter writer) {
-		IRunnableWithProgress runnable = new IRunnableWithProgress() {
-			@Override
-			public void run(IProgressMonitor monitor) {
-				monitor.beginTask(Messages.get().OpenLogDialog_message, IProgressMonitor.UNKNOWN);
-				try {
-					readFile(writer);
-				} catch (IOException e) {
-					writer.println(Messages.get().OpenLogDialog_cannotDisplay);
-				}
+		IRunnableWithProgress runnable = monitor -> {
+			monitor.beginTask(Messages.get().OpenLogDialog_message, IProgressMonitor.UNKNOWN);
+			try {
+				readFile(writer);
+			} catch (IOException e) {
+				writer.println(Messages.get().OpenLogDialog_cannotDisplay);
 			}
 		};
 		ProgressMonitorDialog dialog = new ProgressMonitorDialog(getParentShell());

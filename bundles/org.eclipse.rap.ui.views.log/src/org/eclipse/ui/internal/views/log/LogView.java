@@ -1,9 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * Copyright (c) 2000, 2018 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -555,7 +558,7 @@ public class LogView extends ViewPart implements ILogListener {
 		fFilteredTree.getViewer().setLabelProvider(fLabelProvider = new LogViewLabelProvider(this));
 		fLabelProvider.connect(this);
 		fFilteredTree.getViewer().addSelectionChangedListener(e -> {
-			handleSelectionChanged(e.getSelection());
+			handleSelectionChanged(e.getStructuredSelection());
 			if (fPropertiesAction.isEnabled())
 				((EventDetailsDialogAction) fPropertiesAction).resetSelection();
 		});
@@ -780,6 +783,7 @@ public class LogView extends ViewPart implements ILogListener {
 			reloadLog();
 	}
 
+
 	private void doDeleteLog() {
 		String title = Messages.get().LogView_confirmDelete_title;
 		String message = Messages.get().LogView_confirmDelete_message;
@@ -800,14 +804,16 @@ public class LogView extends ViewPart implements ILogListener {
 	public void fillContextMenu(IMenuManager manager) { // nothing
 	}
 
-	public AbstractEntry[] getElements() {
+	public synchronized AbstractEntry[] getElements() {
 		return elements.toArray(new AbstractEntry[elements.size()]);
 	}
 
 	protected void handleClear() {
 		BusyIndicator.showWhile(fTree.getDisplay(), () -> {
-			elements.clear();
-			groups.clear();
+			synchronized (this) {
+				elements.clear();
+				groups.clear();
+			}
 			if (currentSession != null) {
 				currentSession.removeAllChildren();
 			}
@@ -847,18 +853,17 @@ public class LogView extends ViewPart implements ILogListener {
 					elements.clear();
 					groups.clear();
 
-					List result = new ArrayList();
-					LogSession lastLogSession = LogReader.parseLogFile(fInputFile, getLogMaxTailSize(), result,
-							fMemento);
-					if (lastLogSession != null
-							&& (lastLogSession.getDate() == null || isEclipseStartTime(lastLogSession.getDate()))) {
-						currentSession = lastLogSession;
-					} else {
-						currentSession = null;
-					}
+		List<LogEntry> result = new ArrayList<>();
+		LogSession lastLogSession = LogReader.parseLogFile(fInputFile, getLogMaxTailSize(), result,
+				fMemento);
+		if (lastLogSession != null && (lastLogSession.getDate() == null || isEclipseStartTime(lastLogSession.getDate()))) {
+			currentSession = lastLogSession;
+		} else {
+			currentSession = null;
+		}
 
-					group(result);
-					limitEntriesCount();
+		group(result);
+		limitEntriesCount();
 
 					setContentDescription(getTitleSummary());
 				}
@@ -888,10 +893,10 @@ public class LogView extends ViewPart implements ILogListener {
 			return Messages.get().LogView_WorkspaceLogFile;
 		}
 
-		Map<?, ?> sources = LogFilesManager.getLogSources();
+		Map<String, String> sources = LogFilesManager.getLogSources();
 		if (sources.containsValue(path)) {
-			for (Entry<?, ?> entry : sources.entrySet()) {
-				String key = (String) entry.getKey();
+			for (Entry<String, String> entry : sources.entrySet()) {
+				String key = entry.getKey();
 				if (entry.getValue().equals(path)) {
 					return NLS.bind(Messages.get().LogView_LogFileTitle, new String[] { key, path });
 				}
@@ -921,7 +926,7 @@ public class LogView extends ViewPart implements ILogListener {
 	 * Limits the number of entries according to the max entries limit set in
 	 * memento.
 	 */
-	private void limitEntriesCount() {
+	private synchronized void limitEntriesCount() {
 		int limit = Integer.MAX_VALUE;
 		if (fMemento.getString(LogView.P_USE_LIMIT).equals("true")) {//$NON-NLS-1$
 			limit = fMemento.getInteger(LogView.P_LOG_LIMIT).intValue();
@@ -1098,24 +1103,22 @@ public class LogView extends ViewPart implements ILogListener {
 			return;
 		final ViewPart view = this;
 		if (fDisplay != null) {
-			fDisplay.asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					if (!fTree.isDisposed()) {
-						TreeViewer viewer = fFilteredTree.getViewer();
-						viewer.refresh();
-						viewer.expandToLevel(2);
-						fDeleteLogAction.setEnabled(fInputFile.exists() && fInputFile.equals(Platform.getLogFileLocation().toFile()));
-						fOpenLogAction.setEnabled(fInputFile.exists());
-						fExportLogAction.setEnabled(fInputFile.exists());
-						fExportLogEntryAction.setEnabled(!viewer.getSelection().isEmpty());
-						if (activate && fActivateViewAction.isChecked()) {
-							IWorkbenchWindow window = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
-							if (window != null) {
-								IWorkbenchPage page = window.getActivePage();
-								if (page != null) {
-									page.bringToTop(view);
-								}
+			fDisplay.asyncExec(() -> {
+				if (!fTree.isDisposed()) {
+					TreeViewer viewer = fFilteredTree.getViewer();
+					viewer.refresh();
+					viewer.expandToLevel(2);
+					fDeleteLogAction.setEnabled(
+							fInputFile.exists() && fInputFile.equals(Platform.getLogFileLocation().toFile()));
+					fOpenLogAction.setEnabled(fInputFile.exists());
+					fExportLogAction.setEnabled(fInputFile.exists());
+					fExportLogEntryAction.setEnabled(!viewer.getSelection().isEmpty());
+					if (activate && fActivateViewAction.isChecked()) {
+						IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+						if (window != null) {
+							IWorkbenchPage page = window.getActivePage();
+							if (page != null) {
+								page.bringToTop(view);
 							}
 						}
 					}
@@ -1138,7 +1141,7 @@ public class LogView extends ViewPart implements ILogListener {
 		}
 	}
 
-	private void handleSelectionChanged(ISelection selection) {
+	private void handleSelectionChanged(IStructuredSelection selection) {
 		updateStatus(selection);
 		updateSelectionStack(selection);
 //		fCopyAction.setEnabled((!selection.isEmpty()) && ((IStructuredSelection) selection).getFirstElement() != null);
@@ -1146,26 +1149,23 @@ public class LogView extends ViewPart implements ILogListener {
 		fExportLogEntryAction.setEnabled(!selection.isEmpty());
 	}
 
-	private void updateSelectionStack(ISelection selection) {
+	private void updateSelectionStack(IStructuredSelection selection) {
 		fSelectedStack = null;
-		if (selection instanceof IStructuredSelection) {
-			Object firstObject = ((IStructuredSelection) selection).getFirstElement();
-			if (firstObject instanceof LogEntry) {
-				String stack = ((LogEntry) firstObject).getStack();
-				if (stack != null && stack.length() > 0) {
-					fSelectedStack = stack;
-				}
+		Object firstObject = selection.getFirstElement();
+		if (firstObject instanceof LogEntry) {
+			String stack = ((LogEntry) firstObject).getStack();
+			if (stack != null && stack.length() > 0) {
+				fSelectedStack = stack;
 			}
 		}
-
 	}
 
-	private void updateStatus(ISelection selection) {
+	private void updateStatus(IStructuredSelection selection) {
 		IStatusLineManager status = getViewSite().getActionBars().getStatusLineManager();
 		if (selection.isEmpty())
 			status.setMessage(null);
 		else {
-			Object element = ((IStructuredSelection) selection).getFirstElement();
+			Object element = selection.getFirstElement();
 			status.setMessage(((LogViewLabelProvider) fFilteredTree.getViewer().getLabelProvider()).getColumnText(element, 0));
 		}
 	}
@@ -1174,12 +1174,12 @@ public class LogView extends ViewPart implements ILogListener {
 	 * Converts selected log view element to string.
 	 * @return textual log entry representation or null if selection doesn't contain log entry
 	 */
-	private static String selectionToString(ISelection selection) {
+	private static String selectionToString(IStructuredSelection selection) {
 		String textVersion = null;
 		try (StringWriter writer = new StringWriter(); PrintWriter pwriter = new PrintWriter(writer)) {
 			if (selection.isEmpty())
 				return null;
-			AbstractEntry entry = (AbstractEntry) ((IStructuredSelection) selection).getFirstElement();
+			AbstractEntry entry = (AbstractEntry) selection.getFirstElement();
 			entry.write(pwriter);
 			pwriter.flush();
 			textVersion = writer.toString();
@@ -1341,7 +1341,7 @@ public class LogView extends ViewPart implements ILogListener {
 					return;
 				}
 
-				ISelection selection = fFilteredTree.getViewer().getSelection();
+				IStructuredSelection selection = fFilteredTree.getViewer().getStructuredSelection();
 				String textVersion = selectionToString(selection);
 				event.data = textVersion;
 			}
@@ -1498,7 +1498,7 @@ public class LogView extends ViewPart implements ILogListener {
 		}
 	}
 
-	private Comparator getDefaultComparator() {
+	private Comparator<Object> getDefaultComparator() {
 		return Policy.getComparator();
 	}
 

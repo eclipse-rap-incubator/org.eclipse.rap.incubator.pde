@@ -1,9 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2007 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * Copyright (c) 2007, 2018 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -26,7 +29,7 @@ public abstract class AbstractEntry extends PlatformObject implements IWorkbench
 	/**
 	 * The collection of direct children of this entry
 	 */
-	private List children = new ArrayList();
+	private List<AbstractEntry> children = new ArrayList<>();
 	protected Object parent;
 
 	/**
@@ -42,9 +45,6 @@ public abstract class AbstractEntry extends PlatformObject implements IWorkbench
 		}
 	}
 
-	/**
-	 * @see IWorkbenchAdapter#getChildren(Object)
-	 */
 	@Override
 	public Object[] getChildren(Object parent) {
 		return children.toArray();
@@ -66,25 +66,16 @@ public abstract class AbstractEntry extends PlatformObject implements IWorkbench
 		return children.size();
 	}
 
-	/**
-	 * @see IWorkbenchAdapter#getImageDescriptor(Object)
-	 */
 	@Override
 	public ImageDescriptor getImageDescriptor(Object object) {
 		return null;
 	}
 
-	/**
-	 * @see IWorkbenchAdapter#getLabel(Object)
-	 */
 	@Override
 	public String getLabel(Object o) {
 		return null;
 	}
 
-	/**
-	 * @see IWorkbenchAdapter#getParent(Object)
-	 */
 	@Override
 	public Object getParent(Object o) {
 		return parent;
@@ -103,7 +94,7 @@ public abstract class AbstractEntry extends PlatformObject implements IWorkbench
 	 *
 	 * @param list the list of children to remove
 	 */
-	public void removeChildren(List list) {
+	public void removeChildren(List<AbstractEntry> list) {
 		children.removeAll(list);
 	}
 

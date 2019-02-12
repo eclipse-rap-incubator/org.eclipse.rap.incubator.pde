@@ -1,9 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2017 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * Copyright (c) 2003, 2018 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -57,9 +60,6 @@ public class FilterDialog extends TrayDialog {
 		this.memento = memento;
 	}
 
-	/*
-	 * @see org.eclipse.jface.window.Window#configureShell(Shell)
-	 */
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
@@ -312,7 +312,7 @@ public class FilterDialog extends TrayDialog {
 		// store Event Dialog stack trace filter preferences
 		memento.putBoolean(EventDetailsDialog.FILTER_ENABLED, filterEnabled.getSelection());
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String[] items = filterList.getItems();
 		for (int i = 0; i < items.length; i++) {
 			sb.append(items[i]);

@@ -1,24 +1,28 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2013 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * Copyright (c) 2007, 2014 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Jacek Pospychala <jacek.pospychala@pl.ibm.com> - bugs 202583, 207344
- *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648 
+ *     Benjamin Cabe <benjamin.cabe@anyware-tech.com> - bug 218648
  *     Arnaud Mergey <a_mergey@yahoo.fr> 			  - RAP port
  *******************************************************************************/
 package org.eclipse.ui.internal.views.log;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.rap.rwt.RWT;
 
-public class Messages {
+public class Messages extends NLS {
 
 	public String LogReader_warn_noEntryWithinMaxLogTailSize;
-  
+
 	public String LogView_column_message;
 	public String LogView_column_plugin;
 	public String LogView_column_date;
@@ -41,7 +45,7 @@ public class Messages {
 	public String LogView_readLog_restore_tooltip;
 	public String LogView_show_filter_text;
 	public String LogView_show_filter_initialText;
-
+	
 	public String LogView_SessionStarted;
 	public String LogView_severity_error;
 	public String LogView_severity_warning;
@@ -49,6 +53,7 @@ public class Messages {
 	public String LogView_severity_ok;
 	public String LogView_confirmDelete_title;
 	public String LogView_confirmDelete_message;
+	public String LogView_confirmDelete_deleteButton;
 	public String LogView_confirmOverwrite_message;
 	public String LogView_operation_importing;
 	public String LogView_operation_reloading;
@@ -77,7 +82,6 @@ public class Messages {
 	public String LogView_LogFileTitle;
 	public String LogView_OpenFile;
 	public String LogView_WorkspaceLogFile;
-	public String LogView_confirmDelete_deleteButton;
 
 	public String LogViewLabelProvider_Session;
 	public String LogViewLabelProvider_truncatedMessage;

@@ -1,9 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * Copyright (c) 2000, 2018 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -37,10 +40,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 
 /**
- * Displays details about Log Entry.
- * Event information is split in three sections: details, stack trace and session. Details
- * contain event date, message and severity. Stack trace is displayed if an exception is bound
- * to event. Stack trace entries can be filtered.
+ * Displays details about Log Entry. Event information is split in three
+ * sections: details, stack trace and session. Details contain event date,
+ * message and severity. Stack trace is displayed if an exception is bound to
+ * event. Stack trace entries can be filtered.
  */
 public class EventDetailsDialog extends TrayDialog {
 
@@ -93,12 +96,17 @@ public class EventDetailsDialog extends TrayDialog {
 
 	/**
 	 *
-	 * @param parentShell shell in which dialog is displayed
-	 * @param selection entry initially selected and to be displayed
-	 * @param provider viewer
-	 * @param comparator comparator used to order all entries
+	 * @param parentShell
+	 *            shell in which dialog is displayed
+	 * @param selection
+	 *            entry initially selected and to be displayed
+	 * @param provider
+	 *            viewer
+	 * @param comparator
+	 *            comparator used to order all entries
 	 */
-	protected EventDetailsDialog(Shell parentShell, LogView logView, IAdaptable selection, ISelectionProvider provider, Comparator comparator, IMemento memento) {
+	protected EventDetailsDialog(Shell parentShell, LogView logView, IAdaptable selection, ISelectionProvider provider,
+			Comparator comparator, IMemento memento) {
 		super(parentShell);
 		this.logView = logView;
 		this.provider = (TreeViewer) provider;
@@ -117,9 +125,6 @@ public class EventDetailsDialog extends TrayDialog {
 		stackFilterPatterns = getFilters();
 	}
 
-	/*
-	 * @see org.eclipse.jface.window.Window#configureShell(Shell)
-	 */
 	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
@@ -180,7 +185,7 @@ public class EventDetailsDialog extends TrayDialog {
 				c = 100; // Text area gets 100
 				b = height - a - c; // Stack trace should take up majority of room
 			}
-			sashWeights = new int[] {a, b, c};
+			sashWeights = new int[] { a, b, c };
 		}
 		getSashForm().setWeights(sashWeights);
 		return super.open();
@@ -261,28 +266,26 @@ public class EventDetailsDialog extends TrayDialog {
 			findNextSelectedChild(entry);
 		} else { // at end of list but can branch into child elements - bug 58083
 			setEntryChildren(entry);
-			entry = entryChildren[0];
 			isAtEndOfLog = entryChildren.length == 0;
 			isLastChild = entryChildren.length == 0;
+			if (entryChildren.length > 0) {
+				entry = entryChildren[0];
+			}
 		}
 		setEntrySelectionInTable();
 	}
 
 	protected void copyPressed() {
-		StringWriter writer = new StringWriter();
-		PrintWriter pwriter = new PrintWriter(writer);
-
-		entry.write(pwriter);
-		pwriter.flush();
-		String textVersion = writer.toString();
-		try {
-			pwriter.close();
-			writer.close();
-		} catch (IOException e) { // do nothing
+		try (StringWriter writer = new StringWriter(); PrintWriter pwriter = new PrintWriter(writer)) {
+			entry.write(pwriter);
+			pwriter.flush();
+			String textVersion = writer.toString();
+			// set the clipboard contents
+			// clipboard.setContents(new Object[] { textVersion }, new
+			// Transfer[] { TextTransfer.getInstance() });
+		} catch (IOException e) {
+			// do nothing
 		}
-		// set the clipboard contents
-		// clipboard.setContents(new Object[] {textVersion}, new Transfer[]
-		// {TextTransfer.getInstance()});
 	}
 
 	public void setComparator(Comparator comparator) {
@@ -292,33 +295,24 @@ public class EventDetailsDialog extends TrayDialog {
 
 	private void setComparator(byte sortType, final int sortOrder) {
 		if (sortType == LogView.DATE) {
-			comparator = new Comparator() {
-				@Override
-				public int compare(Object e1, Object e2) {
-					Date date1 = ((LogEntry) e1).getDate();
-					Date date2 = ((LogEntry) e2).getDate();
-					if (sortOrder == LogView.ASCENDING)
-						return date1.getTime() < date2.getTime() ? LogView.DESCENDING : LogView.ASCENDING;
-					return date1.getTime() > date2.getTime() ? LogView.DESCENDING : LogView.ASCENDING;
-				}
+			comparator = (e1, e2) -> {
+				Date date1 = ((LogEntry) e1).getDate();
+				Date date2 = ((LogEntry) e2).getDate();
+				if (sortOrder == LogView.ASCENDING)
+					return date1.getTime() < date2.getTime() ? LogView.DESCENDING : LogView.ASCENDING;
+				return date1.getTime() > date2.getTime() ? LogView.DESCENDING : LogView.ASCENDING;
 			};
 		} else if (sortType == LogView.PLUGIN) {
-			comparator = new Comparator() {
-				@Override
-				public int compare(Object e1, Object e2) {
-					LogEntry entry1 = (LogEntry) e1;
-					LogEntry entry2 = (LogEntry) e2;
-					return collator.compare(entry1.getPluginId(), entry2.getPluginId()) * sortOrder;
-				}
+			comparator = (e1, e2) -> {
+				LogEntry entry1 = (LogEntry) e1;
+				LogEntry entry2 = (LogEntry) e2;
+				return collator.compare(entry1.getPluginId(), entry2.getPluginId()) * sortOrder;
 			};
 		} else {
-			comparator = new Comparator() {
-				@Override
-				public int compare(Object e1, Object e2) {
-					LogEntry entry1 = (LogEntry) e1;
-					LogEntry entry2 = (LogEntry) e2;
-					return collator.compare(entry1.getMessage(), entry2.getMessage()) * sortOrder;
-				}
+			comparator = (e1, e2) -> {
+				LogEntry entry1 = (LogEntry) e1;
+				LogEntry entry2 = (LogEntry) e2;
+				return collator.compare(entry1.getMessage(), entry2.getMessage()) * sortOrder;
 			};
 		}
 	}
@@ -401,7 +395,8 @@ public class EventDetailsDialog extends TrayDialog {
 		if (isChild(entry)) {
 			boolean canGoToParent = (entry.getParent(entry) instanceof LogEntry);
 			backButton.setEnabled((childIndex > 0) || canGoToParent);
-			nextButton.setEnabled(nextChildExists(entry, parentEntry, entryChildren) || entry.hasChildren() || !isLastChild || !isAtEnd);
+			nextButton.setEnabled(nextChildExists(entry, parentEntry, entryChildren) || entry.hasChildren()
+					|| !isLastChild || !isAtEnd);
 		} else {
 			backButton.setEnabled(childIndex != 0);
 			nextButton.setEnabled(!isAtEnd || entry.hasChildren());
@@ -411,7 +406,7 @@ public class EventDetailsDialog extends TrayDialog {
 	private void findNextSelectedChild(AbstractEntry originalEntry) {
 		if (isChild(parentEntry)) {
 			// we're at the end of the child list; find next parent
-			// to select.  If the parent is a child at the end of the child
+			// to select. If the parent is a child at the end of the child
 			// list, find its next parent entry to select, etc.
 
 			entry = parentEntry;
@@ -447,10 +442,11 @@ public class EventDetailsDialog extends TrayDialog {
 		}
 	}
 
-	private boolean nextChildExists(AbstractEntry originalEntry, AbstractEntry originalParent, AbstractEntry[] originalEntries) {
+	private boolean nextChildExists(AbstractEntry originalEntry, AbstractEntry originalParent,
+			AbstractEntry[] originalEntries) {
 		if (isChild(parentEntry)) {
 			// we're at the end of the child list; find next parent
-			// to select.  If the parent is a child at the end of the child
+			// to select. If the parent is a child at the end of the child
 			// list, find its next parent entry to select, etc.
 
 			entry = parentEntry;
@@ -508,14 +504,14 @@ public class EventDetailsDialog extends TrayDialog {
 		if (comparator != null)
 			Arrays.sort(children, comparator);
 
-		List result = new ArrayList();
+		List<AbstractEntry> result = new ArrayList<>();
 		for (Object element : children) {
 			if (element instanceof AbstractEntry) {
-				result.add(element);
+				result.add((AbstractEntry) element);
 			}
 		}
 
-		entryChildren = (AbstractEntry[]) result.toArray(new AbstractEntry[result.size()]);
+		entryChildren = result.toArray(new AbstractEntry[result.size()]);
 	}
 
 	public SashForm getSashForm() {
@@ -554,7 +550,7 @@ public class EventDetailsDialog extends TrayDialog {
 		Composite comp = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
 		layout.marginWidth = layout.marginHeight = 0;
-		//layout.numColumns = 1;
+		// layout.numColumns = 1;
 		comp.setLayout(layout);
 		comp.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 		((GridData) comp.getLayoutData()).verticalAlignment = SWT.BOTTOM;
@@ -589,6 +585,8 @@ public class EventDetailsDialog extends TrayDialog {
 				e.result = Messages.get().EventDetailsDialog_copy;
 			}
 		});
+		copyButton.setEnabled(false);
+		// There is no clipboard access in rap so button is disabled
 
 		nextButton = createButton(container, IDialogConstants.NEXT_ID, "", false); //$NON-NLS-1$
 		gd = new GridData();
@@ -630,7 +628,8 @@ public class EventDetailsDialog extends TrayDialog {
 			}
 		});
 
-		// set numColumns at the end, after all createButton() calls, which change this value
+		// set numColumns at the end, after all createButton() calls, which change this
+		// value
 		layout.numColumns = 2;
 	}
 
@@ -687,9 +686,9 @@ public class EventDetailsDialog extends TrayDialog {
 		label.setText(Messages.get().EventDetailsDialog_message);
 		gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
 		label.setLayoutData(gd);
-		msgText = new Text(textContainer, SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | SWT.BORDER);
+		msgText = new Text(textContainer, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 		msgText.setEditable(false);
-		gd = new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING | GridData.GRAB_VERTICAL);
+		gd = new GridData(GridData.FILL_BOTH | GridData.GRAB_HORIZONTAL);
 		gd.horizontalSpan = 2;
 		gd.grabExcessVerticalSpace = true;
 		msgText.setLayoutData(gd);
@@ -742,6 +741,7 @@ public class EventDetailsDialog extends TrayDialog {
 
 	/**
 	 * Loads filters from preferences.
+	 * 
 	 * @return filters from preferences or empty array
 	 *
 	 * @since 3.4
@@ -757,18 +757,17 @@ public class EventDetailsDialog extends TrayDialog {
 		}
 
 		StringTokenizer st = new StringTokenizer(filtersString, ";"); //$NON-NLS-1$
-		List filters = new ArrayList();
+		List<String> filters = new ArrayList<>();
 		while (st.hasMoreElements()) {
 			String filter = st.nextToken();
 			filters.add(filter);
 		}
 
-		return (String[]) filters.toArray(new String[filters.size()]);
+		return filters.toArray(new String[filters.size()]);
 	}
 
 	/**
-	 * Filters stack trace.
-	 * Every stack trace line is compared against all patterns.
+	 * Filters stack trace. Every stack trace line is compared against all patterns.
 	 * If line contains any of pattern strings, it's excluded from output.
 	 *
 	 * @returns filtered stack trace
@@ -780,7 +779,7 @@ public class EventDetailsDialog extends TrayDialog {
 		}
 
 		StringTokenizer st = new StringTokenizer(stack, "\n"); //$NON-NLS-1$
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		while (st.hasMoreTokens()) {
 			String stackElement = st.nextToken();
 
@@ -799,10 +798,11 @@ public class EventDetailsDialog extends TrayDialog {
 		return result.toString();
 	}
 
-	//--------------- configuration handling --------------
+	// --------------- configuration handling --------------
 
 	/**
 	 * Stores the current state in the dialog settings.
+	 * 
 	 * @since 2.0
 	 */
 	private void storeSettings() {
@@ -810,8 +810,8 @@ public class EventDetailsDialog extends TrayDialog {
 	}
 
 	/**
-	 * Returns the dialog settings object used to share state
-	 * between several event detail dialogs.
+	 * Returns the dialog settings object used to share state between several event
+	 * detail dialogs.
 	 *
 	 * @return the dialog settings to be used
 	 */
@@ -824,8 +824,8 @@ public class EventDetailsDialog extends TrayDialog {
 	}
 
 	/**
-	 * Initializes itself from the dialog settings with the same state
-	 * as at the previous invocation.
+	 * Initializes itself from the dialog settings with the same state as at the
+	 * previous invocation.
 	 */
 	private void readConfiguration() {
 		IDialogSettings s = getDialogSettings();
@@ -867,6 +867,7 @@ public class EventDetailsDialog extends TrayDialog {
 
 	/**
 	 * Utility method to get all top level elements of the Log View
+	 * 
 	 * @return top level elements of the Log View
 	 */
 	private AbstractEntry[] getElements() {
